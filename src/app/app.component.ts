@@ -68,7 +68,16 @@ export class AppComponent implements OnInit {
 
   startTracking() {
     if (navigator.geolocation) {
-      this.watchId = navigator.geolocation.watchPosition(this.updateCoordinates.bind(this));
+
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 100,
+        maximumAge: 0,
+      };
+
+      this.watchId = navigator.geolocation.watchPosition(this.updateCoordinates.bind(this), (error) => error, options);
+
+      
     } else {
       alert("Navegador não suportado")
     }
@@ -79,8 +88,7 @@ export class AppComponent implements OnInit {
   }
 
   updateCoordinates(position: any) {
-//debugger
-    
+    //debugger
 
     const pathStyle = {
       color: 'red',
@@ -96,11 +104,11 @@ export class AppComponent implements OnInit {
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
-      this.mensagem = 'criando novos pontos - ' + this.pontos;
+      this.mensagem = 'criando novos pontos - ' + this.pontos + 'accuracy= '+position.coords.accuracy+' metros';
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
-console.log(distancia)
+      console.log(distancia)
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
