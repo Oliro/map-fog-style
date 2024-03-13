@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   public lastTimestamp: number = 0;
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
-
+  public pontos: number = 0;
   public mensagem = '2-Inicio';
 
   ngOnInit(): void {
@@ -59,10 +59,7 @@ export class AppComponent implements OnInit {
     //   this.coordinatesArray, pathStyle
     // );
 
-    this.heatMap = L.heatLayer([], { radius: 8 });
-
     tiles.addTo(this.map)
-    this.heatMap.addTo(this.map)
 
   }
 
@@ -79,6 +76,8 @@ export class AppComponent implements OnInit {
   }
 
   updateCoordinates(position: any) {
+    debugger
+
 
     const pathStyle = {
       color: 'red',
@@ -92,9 +91,13 @@ export class AppComponent implements OnInit {
 
     // Verificar se há uma posição anterior para calcular o deslocamento
     if (this.lastPosition && this.lastTimestamp) {
+
+      this.pontos++
+      this.mensagem = 'criando novos pontos - ' + this.pontos;
+
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
-
+      console.log(distancia)
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
@@ -102,37 +105,41 @@ export class AppComponent implements OnInit {
       const velocidade = distancia / diferenca_tempo * 1000; // Convertendo para metros por segundo
 
       // Calcular a aceleração em metros por segundo ao quadrado
-      const aceleracao = (velocidade - this.lastVelocidade) / (diferenca_tempo / 1000); // Convertendo para segundos
+      //const aceleracao = (velocidade - this.lastVelocidade) / (diferenca_tempo / 1000); // Convertendo para segundos
 
-      console.log(this.LIMITE_DESLOCAMENTO + '-> distancia = ', distancia, '-' , +this.LIMITE_VELOCIDADE+'-> velocidade= ',
-       velocidade , this.LIMITE_ACELERACAO + '-> aceleração= ', Math.abs(aceleracao) + this.INTERVALO_TEMPO+ '-> tempo='+diferenca_tempo);
+      // console.log(this.LIMITE_DESLOCAMENTO + '-> distancia = ', distancia, '-' , +this.LIMITE_VELOCIDADE+'-> velocidade= ',
+      //  velocidade , this.LIMITE_ACELERACAO + '-> aceleração= ', Math.abs(aceleracao) + this.INTERVALO_TEMPO+ '-> tempo='+diferenca_tempo);
 
-      this.mensagem = 'distancia = ' + distancia + ' - velocidade = ' + velocidade + ' - aceleração = ' + Math.abs(aceleracao);
+      // this.mensagem = 'distancia = ' + distancia + ' - velocidade = ' + velocidade + ' - aceleração = ' + Math.abs(aceleracao);
 
       // Aplicar os filtros
       if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && diferenca_tempo >= this.INTERVALO_TEMPO) {
         // Adicionar as novas coordenadas
         this.coordinatesArray.push([latitude, longitude, 1]);
-        this.heatMap.addLatLng([latitude, longitude, 1]);
 
         // Atualizar o polyline com as novas coordenadas
-        if (this.polyline) {
-          this.polyline.addLatLng([latitude, longitude]);
-        } else {
-          this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
-        }
+        this.coordinatesArray.map((path) => {
+
+        this.polyline.addLatLng(path);
+        this.heatMap.addLatLng(path);
+
+        })
+
+
+
       } else {
         console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
+      this.mensagem = "Cria primeiro ponto"
       // Se não houver posição anterior, adicione a nova posição
       this.coordinatesArray.push([latitude, longitude, 1]);
-      this.heatMap.addLatLng([latitude, longitude, 1]);
 
       // Criar polyline se não existir ainda
       if (!this.polyline) {
         this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+        this.heatMap = L.heatLayer(this.coordinatesArray, { radius: 8 }).addTo(this.map);
       }
     }
 
