@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
 
@@ -76,7 +76,7 @@ export class AppComponent implements OnInit {
   }
 
   updateCoordinates(position: any) {
-    debugger
+    //debugger
 
 
     const pathStyle = {
@@ -93,11 +93,10 @@ export class AppComponent implements OnInit {
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
-      this.mensagem = 'criando novos pontos - ' + this.pontos;
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
-      console.log(distancia)
+      this.mensagem = 'criando novos pontos - ' + this.pontos + '--- distancia = '+ distancia;
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
