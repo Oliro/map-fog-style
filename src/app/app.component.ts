@@ -12,7 +12,7 @@ import 'leaflet.heat';
 export class AppComponent implements OnInit {
 
   private map!: L.Map;
-  private heatMap!: L.HeatLayer;
+  public heatMap!: L.HeatLayer;
   private watchId!: number;
 
   public coordinatesArray: any[] = [];
@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
     });
 
 
-    this.heatMap = L.heatLayer([], { radius: 25 });
+    this.heatMap = L.heatLayer([], { radius: 8 });
 
     tiles.addTo(this.map)
     this.heatMap.addTo(this.map)
@@ -54,17 +54,17 @@ export class AppComponent implements OnInit {
   }
 
   updateCoordinates(position: any) {
-console.log(position)
+//console.log(position)
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
     this.coordinatesArray.push([latitude, longitude, 1]);
     this.heatMap.addLatLng([latitude, longitude, 1]);
     
-    this.coordinatesArray.map((path: any) => {
-      //console.log('atualizando')
-      //this.heatMap.addLatLng(path);
-    });
+    // this.coordinatesArray.map((path: any) => {
+    //   console.log('atualizando')
+    //   this.heatMap.addLatLng(path);
+    // });
 
     console.log(this.coordinatesArray, '-', this.heatMap)
 
