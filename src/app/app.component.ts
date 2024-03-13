@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
 
@@ -59,7 +59,10 @@ export class AppComponent implements OnInit {
     //   this.coordinatesArray, pathStyle
     // );
 
+    this.heatMap = L.heatLayer([], { radius: 8 });
+
     tiles.addTo(this.map)
+    this.heatMap.addTo(this.map)
 
   }
 
@@ -76,8 +79,8 @@ export class AppComponent implements OnInit {
   }
 
   updateCoordinates(position: any) {
-    //debugger
-
+//debugger
+    
 
     const pathStyle = {
       color: 'red',
@@ -93,10 +96,11 @@ export class AppComponent implements OnInit {
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
+      this.mensagem = 'criando novos pontos - ' + this.pontos;
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
-      this.mensagem = 'criando novos pontos - ' + this.pontos + '--- distancia = '+ distancia;
+console.log(distancia)
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
@@ -116,16 +120,14 @@ export class AppComponent implements OnInit {
         // Adicionar as novas coordenadas
         this.coordinatesArray.push([latitude, longitude, 1]);
 
+
         // Atualizar o polyline com as novas coordenadas
-        this.coordinatesArray.map((path) => {
-
-        this.polyline.addLatLng(path);
-        this.heatMap.addLatLng(path);
-
-        })
-
-
-
+        if (this.polyline) {
+          this.polyline.addLatLng([latitude, longitude]);
+          this.heatMap.addLatLng([latitude, longitude, 1]);
+        } else {
+          this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+        }
       } else {
         console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
@@ -134,11 +136,11 @@ export class AppComponent implements OnInit {
       this.mensagem = "Cria primeiro ponto"
       // Se não houver posição anterior, adicione a nova posição
       this.coordinatesArray.push([latitude, longitude, 1]);
+      this.heatMap.addLatLng([latitude, longitude, 1]);
 
       // Criar polyline se não existir ainda
       if (!this.polyline) {
         this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
-        this.heatMap = L.heatLayer(this.coordinatesArray, { radius: 8 }).addTo(this.map);
       }
     }
 
