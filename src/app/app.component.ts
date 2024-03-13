@@ -30,6 +30,9 @@ export class AppComponent implements OnInit {
   public lastTimestamp: number = 0;
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
+
+  public mensagem = 'Inicio';
+
   ngOnInit(): void {
 
     this.createMap();
@@ -115,6 +118,7 @@ export class AppComponent implements OnInit {
         }
       } else {
         console.log('Ponto descartado devido a filtros.');
+        this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
       // Se não houver posição anterior, adicione a nova posição
