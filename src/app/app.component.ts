@@ -59,13 +59,14 @@ console.log(position)
     const longitude = position.coords.longitude;
 
     this.coordinatesArray.push([latitude, longitude, 1]);
-
+    this.heatMap.addLatLng([latitude, longitude, 1]);
+    
     this.coordinatesArray.map((path: any) => {
-      console.log('atualizando')
-      this.heatMap.addLatLng(path);
+      //console.log('atualizando')
+      //this.heatMap.addLatLng(path);
     });
 
-    console.log(this.coordinatesArray)
+    console.log(this.coordinatesArray, '-', this.heatMap)
 
   }
 
