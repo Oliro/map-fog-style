@@ -88,6 +88,7 @@ export class AppComponent implements OnInit {
 
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
+    const timestamp_atual = position.timestamp;
 
     // Verificar se há uma posição anterior para calcular o deslocamento
     if (this.lastPosition && this.lastTimestamp) {
@@ -95,18 +96,21 @@ export class AppComponent implements OnInit {
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
 
       // Calcular o intervalo de tempo entre as leituras de GPS
-      const intervaloTempo = position.timestamp - this.lastTimestamp;
+      const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
       // Calcular a velocidade em metros por segundo
-      const velocidade = distancia / intervaloTempo * 1000; // Convertendo para metros por segundo
+      const velocidade = distancia / diferenca_tempo * 1000; // Convertendo para metros por segundo
 
       // Calcular a aceleração em metros por segundo ao quadrado
-      const aceleracao = (velocidade - this.lastVelocidade) / (intervaloTempo / 1000); // Convertendo para segundos
+      const aceleracao = (velocidade - this.lastVelocidade) / (diferenca_tempo / 1000); // Convertendo para segundos
 
-      console.log('distancia = ', distancia, '-' , 'velocidade= ', velocidade , 'aceleração= ', Math.abs(aceleracao));
+      console.log(this.LIMITE_DESLOCAMENTO + '-> distancia = ', distancia, '-' , +this.LIMITE_VELOCIDADE+'-> velocidade= ',
+       velocidade , this.LIMITE_ACELERACAO + '-> aceleração= ', Math.abs(aceleracao) + this.INTERVALO_TEMPO+ '-> tempo='+diferenca_tempo);
+
       this.mensagem = 'distancia = ' + distancia + ' - velocidade = ' + velocidade + ' - aceleração = ' + Math.abs(aceleracao);
+
       // Aplicar os filtros
-      if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE) {
+      if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && diferenca_tempo >= this.INTERVALO_TEMPO) {
         // Adicionar as novas coordenadas
         this.coordinatesArray.push([latitude, longitude, 1]);
         this.heatMap.addLatLng([latitude, longitude, 1]);
@@ -135,7 +139,7 @@ export class AppComponent implements OnInit {
     // Atualizar a última posição, a última velocidade e o último timestamp
     this.lastPosition = position;
     this.lastVelocidade = this.velocidade;
-    this.lastTimestamp = position.timestamp;
+    this.lastTimestamp = timestamp_atual;
 
   }
 

@@ -5,6 +5,23 @@
   <button (click)="startTracking()">Iniciar</button>
   <button (click)="stopTracking()">Finalizar</button>
 
+  <br>
+  <label for="fname">Limite de deslocamento máximo em metros:</label>
+  <br>
+  <input type="number" [(ngModel)]="LIMITE_DESLOCAMENTO">
+  <br>
+  <label for="fname">Limite de velocidade máxima em metros por segundo</label>
+  <br>
+  <input type="number" [(ngModel)]="LIMITE_VELOCIDADE">
+  <br>
+  <label for="fname">Limite de aceleração máxima em metros por segundo ao quadrado</label>
+  <br>
+  <input type="number" [(ngModel)]="LIMITE_ACELERACAO">
+  <br>
+  <label for="fname">Intervalo de tempo entre leituras de GPS em milissegundos</label>
+  <br>
+  <input type="number" [(ngModel)]="INTERVALO_TEMPO">
+
   <div>
     <br>
     <span>{{coordinatesArray | json}}</span>
