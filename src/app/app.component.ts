@@ -19,10 +19,10 @@ export class AppComponent implements OnInit {
   public polyline: any;
 
   // Constantes para os limites de filtro (ajuste conforme necessário)
-  public LIMITE_DESLOCAMENTO = 5; // Limite de deslocamento máximo em metros
-  public LIMITE_VELOCIDADE = 20; // Limite de velocidade máxima em metros por segundo
-  public LIMITE_ACELERACAO = 5; // Limite de aceleração máxima em metros por segundo ao quadrado
-  public INTERVALO_TEMPO = 1000; // Intervalo de tempo entre leituras de GPS em milissegundos
+  public LIMITE_DESLOCAMENTO = 20; // Limite de deslocamento máximo em metros
+  public LIMITE_VELOCIDADE = 5; // Limite de velocidade máxima em metros por segundo
+  public LIMITE_ACELERACAO = 20; // Limite de aceleração máxima em metros por segundo ao quadrado
+  public INTERVALO_TEMPO = 500; // Intervalo de tempo entre leituras de GPS em milissegundos
 
   // Variáveis para armazenar a última posição, a última velocidade e o último timestamp
   public lastPosition: any = null;
@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
 
-  public mensagem = 'Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
 
@@ -119,7 +119,7 @@ export class AppComponent implements OnInit {
         }
       } else {
         console.log('Ponto descartado devido a filtros.');
-        this.mensagem = '2 - Ponto descartado devido a filtros.'
+        this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
       // Se não houver posição anterior, adicione a nova posição
