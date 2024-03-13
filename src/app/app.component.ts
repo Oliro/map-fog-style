@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
 
-  public mensagem = '1-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
 
@@ -104,7 +104,7 @@ export class AppComponent implements OnInit {
       const aceleracao = (velocidade - this.lastVelocidade) / (intervaloTempo / 1000); // Convertendo para segundos
 
       console.log('distancia = ', distancia, '-' , 'velocidade= ', velocidade , 'aceleração= ', Math.abs(aceleracao));
-
+      this.mensagem = 'distancia = ' + distancia + ' - velocidade = ' + velocidade + ' - aceleração = ' + Math.abs(aceleracao);
       // Aplicar os filtros
       if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE) {
         // Adicionar as novas coordenadas
