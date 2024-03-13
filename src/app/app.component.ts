@@ -33,6 +33,15 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
+    const pathStyle = {
+      color: 'red',
+      weight: 2,
+      smoothFactor: 0.5
+    };
+
+    const polygon = L.polyline(
+      this.coordinatesArray, pathStyle
+    );
 
     this.heatMap = L.heatLayer([], { radius: 8 });
 
