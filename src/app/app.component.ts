@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
   private heatMap!: L.HeatLayer;
   private watchId!: number;
 
-  private coordinatesArray: any[] = [];
+  public coordinatesArray: any[] = [];
 
   ngOnInit(): void {
 
