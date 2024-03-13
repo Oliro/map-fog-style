@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   public polyline: any;
 
   // Constantes para os limites de filtro (ajuste conforme necessário)
-  public LIMITE_DESLOCAMENTO = 100; // Limite de deslocamento máximo em metros
+  public LIMITE_DESLOCAMENTO = 1; // Limite de deslocamento máximo em metros
   public LIMITE_VELOCIDADE = 20; // Limite de velocidade máxima em metros por segundo
   public LIMITE_ACELERACAO = 5; // Limite de aceleração máxima em metros por segundo ao quadrado
   public INTERVALO_TEMPO = 1000; // Intervalo de tempo entre leituras de GPS em milissegundos
@@ -118,7 +118,7 @@ export class AppComponent implements OnInit {
         }
       } else {
         console.log('Ponto descartado devido a filtros.');
-        this.mensagem = 'Ponto descartado devido a filtros.'
+        this.mensagem = '1 - Ponto descartado devido a filtros.'
       }
     } else {
       // Se não houver posição anterior, adicione a nova posição
