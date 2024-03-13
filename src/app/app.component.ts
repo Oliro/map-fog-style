@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   private watchId!: number;
 
   public coordinatesArray: any[] = [];
+  public polyline: any;
 
   ngOnInit(): void {
 
@@ -33,15 +34,15 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    const pathStyle = {
-      color: 'red',
-      weight: 2,
-      smoothFactor: 0.5
-    };
+    // const pathStyle = {
+    //   color: 'red',
+    //   weight: 2,
+    //   smoothFactor: 0.5
+    // };
 
-    const polygon = L.polyline(
-      this.coordinatesArray, pathStyle
-    );
+    // const polygon = L.polyline(
+    //   this.coordinatesArray, pathStyle
+    // );
 
     this.heatMap = L.heatLayer([], { radius: 8 });
 
@@ -70,10 +71,20 @@ export class AppComponent implements OnInit {
     this.coordinatesArray.push([latitude, longitude, 1]);
     this.heatMap.addLatLng([latitude, longitude, 1]);
     
-    // this.coordinatesArray.map((path: any) => {
-    //   console.log('atualizando')
-    //   this.heatMap.addLatLng(path);
-    // });
+  // Adicionando as novas coordenadas à polyline
+  
+  const pathStyle = {
+    color: 'red',
+    weight: 2,
+    smoothFactor: 0.5
+  };
+
+  if (this.polyline) {
+    this.polyline.addLatLng([latitude, longitude]);
+  } else {
+    // Se a polyline não existir ainda, criamos uma
+    this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+  }
 
     console.log(this.coordinatesArray, '-', this.heatMap)
 
