@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   public polyline: any;
 
   // Constantes para os limites de filtro (ajuste conforme necessário)
-  public LIMITE_DESLOCAMENTO = 1; // Limite de deslocamento máximo em metros
+  public LIMITE_DESLOCAMENTO = 5; // Limite de deslocamento máximo em metros
   public LIMITE_VELOCIDADE = 20; // Limite de velocidade máxima em metros por segundo
   public LIMITE_ACELERACAO = 5; // Limite de aceleração máxima em metros por segundo ao quadrado
   public INTERVALO_TEMPO = 1000; // Intervalo de tempo entre leituras de GPS em milissegundos
@@ -86,7 +86,6 @@ export class AppComponent implements OnInit {
       smoothFactor: 0.5
     };
 
-    console.log(position);
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
@@ -104,8 +103,10 @@ export class AppComponent implements OnInit {
       // Calcular a aceleração em metros por segundo ao quadrado
       const aceleracao = (velocidade - this.lastVelocidade) / (intervaloTempo / 1000); // Convertendo para segundos
 
+      console.log('distancia = ', distancia, '-' , 'velocidade= ', velocidade , 'aceleração= ', Math.abs(aceleracao));
+
       // Aplicar os filtros
-      if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && Math.abs(aceleracao) <= this.LIMITE_ACELERACAO) {
+      if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE) {
         // Adicionar as novas coordenadas
         this.coordinatesArray.push([latitude, longitude, 1]);
         this.heatMap.addLatLng([latitude, longitude, 1]);
@@ -118,7 +119,7 @@ export class AppComponent implements OnInit {
         }
       } else {
         console.log('Ponto descartado devido a filtros.');
-        this.mensagem = '1 - Ponto descartado devido a filtros.'
+        this.mensagem = '2 - Ponto descartado devido a filtros.'
       }
     } else {
       // Se não houver posição anterior, adicione a nova posição
