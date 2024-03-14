@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '5-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
 
@@ -108,6 +108,7 @@ export class AppComponent implements OnInit {
         // Atualizar o polyline com as novas coordenadas
         if (this.polyline) {
           this.addPathLine(latitude,longitude)
+          this.heatMap.addLatLng([latitude, longitude, 1]);
         } else {
 
           this.polyline = this.createPolyline()
@@ -162,7 +163,6 @@ export class AppComponent implements OnInit {
   // não esta chamando ainda, falta implementar
   addPathLine(latitude: number, longitude:number){
     this.polyline.addLatLng([latitude, longitude]);
-    this.heatMap.addLatLng([latitude, longitude, 1]);
   }
 
   ngOnDestroy() {
