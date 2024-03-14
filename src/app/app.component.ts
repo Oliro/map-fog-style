@@ -19,17 +19,15 @@ export class AppComponent implements OnInit {
   public polyline: any;
   public polylineBorder: any;
 
-  // Constantes para os limites de filtro (ajuste conforme necessário)
-  public LIMITE_DESLOCAMENTO = 20; // Limite de deslocamento máximo em metros
-  public LIMITE_VELOCIDADE = 5; // Limite de velocidade máxima em metros por segundo
-  public LIMITE_ACELERACAO = 20; // Limite de aceleração máxima em metros por segundo ao quadrado
-  public INTERVALO_TEMPO = 500; // Intervalo de tempo entre leituras de GPS em milissegundos
+  public displacementLimit = 20; // Limite de deslocamento máximo em metros
+  public speedLimit = 5; // Limite de velocidade máxima em metros por segundo
+  public accelerationLimit = 20; // Limite de aceleração máxima em metros por segundo ao quadrado
+  public timeInterval = 500; // Intervalo de tempo entre leituras de GPS em milissegundos
 
-  // Variáveis para armazenar a última posição, a última velocidade e o último timestamp
   public lastPosition: any = null;
-  public lastVelocidade: number = 0;
+  public lastSpeed: number = 0;
   public lastTimestamp: number = 0;
-  public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
+  public speed!: number; 
 
   public pontos: number = 0;
   public mensagem = '1-Inicio';
@@ -40,10 +38,11 @@ export class AppComponent implements OnInit {
 
   createMap() {
 
-    this.map = L.map('map').setView([-23.234419534508827, -45.899720000703645], 18);
+    this.map = L.map('map').setView([-23.234419534508827, -45.899720000703645], 19);
 
     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
+      maxNativeZoom:19,
+      maxZoom:25,
       minZoom: 10,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
@@ -56,20 +55,13 @@ export class AppComponent implements OnInit {
     this.polyline.addTo(this.map);
     this.polylineBorder.addTo(this.map);
     this.heatMap.addTo(this.map)
+
   }
 
   startTracking() {
     if (navigator.geolocation) {
-
-      const options = {
-        enableHighAccuracy: true,
-        timeout: 100,
-        maximumAge: 0,
-      };
-
+      const options = { enableHighAccuracy: true, timeout: 100, maximumAge: 0 };
       this.watchId = navigator.geolocation.watchPosition(this.updateCoordinates.bind(this), (error) => error, options);
-
-
     } else {
       alert("Navegador não suportado")
     }
@@ -83,7 +75,7 @@ export class AppComponent implements OnInit {
     // debugger
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
-    const timestamp_atual = position.timestamp;
+    const currentTime = position.timestamp;
 
     if (this.lastPosition && this.lastTimestamp) {
 
@@ -93,14 +85,12 @@ export class AppComponent implements OnInit {
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
       // Calcular o intervalo de tempo entre as leituras de GPS
-      const diferenca_tempo = timestamp_atual - this.lastTimestamp;
+      const diferenca_tempo = currentTime - this.lastTimestamp;
       // Calcular a velocidade em metros por segundo
       const velocidade = distancia / diferenca_tempo * 1000;
 
-      if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && diferenca_tempo >= this.INTERVALO_TEMPO) {
-
+      if (distancia <= this.displacementLimit && velocidade <= this.speedLimit && diferenca_tempo >= this.timeInterval) {
         this.addPathLine(latitude, longitude)
-
       } else {
         console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
@@ -111,8 +101,8 @@ export class AppComponent implements OnInit {
     }
 
     this.lastPosition = position;
-    this.lastVelocidade = this.velocidade;
-    this.lastTimestamp = timestamp_atual;
+    this.lastSpeed = this.speed;
+    this.lastTimestamp = currentTime;
 
   }
 
@@ -142,9 +132,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    if (this.map) {
-      this.map.remove();
-    }
-
+    if (this.map) this.map.remove();
   }
 }
