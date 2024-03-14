@@ -49,15 +49,6 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    // const pathStyle = {
-    //   color: 'red',
-    //   weight: 2,
-    //   smoothFactor: 0.5
-    // };
-
-    // const polygon = L.polyline(
-    //   this.coordinatesArray, pathStyle
-    // );
 
     this.heatMap = L.heatLayer([], { radius: 8 });
 
@@ -108,20 +99,14 @@ export class AppComponent implements OnInit {
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
-      console.log(distancia)
+
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
       // Calcular a velocidade em metros por segundo
-      const velocidade = distancia / diferenca_tempo * 1000; // Convertendo para metros por segundo
+      const velocidade = distancia / diferenca_tempo * 1000; 
 
-      // Calcular a aceleração em metros por segundo ao quadrado
-      //const aceleracao = (velocidade - this.lastVelocidade) / (diferenca_tempo / 1000); // Convertendo para segundos
 
-      // console.log(this.LIMITE_DESLOCAMENTO + '-> distancia = ', distancia, '-' , +this.LIMITE_VELOCIDADE+'-> velocidade= ',
-      //  velocidade , this.LIMITE_ACELERACAO + '-> aceleração= ', Math.abs(aceleracao) + this.INTERVALO_TEMPO+ '-> tempo='+diferenca_tempo);
-
-      // this.mensagem = 'distancia = ' + distancia + ' - velocidade = ' + velocidade + ' - aceleração = ' + Math.abs(aceleracao);
 
       // Aplicar os filtros
       if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && diferenca_tempo >= this.INTERVALO_TEMPO) {
