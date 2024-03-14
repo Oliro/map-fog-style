@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '6-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
 
@@ -114,14 +114,10 @@ export class AppComponent implements OnInit {
 
       // Aplicar os filtros
       if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && diferenca_tempo >= this.INTERVALO_TEMPO) {
-        // Adicionar as novas coordenadas
-        this.coordinatesArray.push([latitude, longitude, 1]);
-
 
         // Atualizar o polyline com as novas coordenadas
         if (this.polyline) {
-          this.polyline.addLatLng([latitude, longitude]);
-          this.heatMap.addLatLng([latitude, longitude, 1]);
+          this.addPathLine(latitude,longitude)
         } else {
           console.log('não deve entrar aqui')
           //this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
@@ -132,11 +128,7 @@ export class AppComponent implements OnInit {
       }
     } else {
       this.mensagem = "Cria primeiro ponto"
-      // Se não houver posição anterior, adicione a nova posição
-      this.coordinatesArray.push([latitude, longitude, 1]);
-      this.polyline.addLatLng([latitude, longitude]);
-      this.heatMap.addLatLng([latitude, longitude, 1]);
-       // Criar polyline se não existir ainda
+      this.addPathLine(latitude,longitude)
       if (!this.polyline) {
         console.log('não deve entrar aqui')
         //this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
@@ -148,6 +140,12 @@ export class AppComponent implements OnInit {
     this.lastVelocidade = this.velocidade;
     this.lastTimestamp = timestamp_atual;
 
+  }
+
+  addPathLine(latitude: number, longitude:number){
+    this.polyline.addLatLng([latitude, longitude]);
+    this.heatMap.addLatLng([latitude, longitude, 1]);
+    this.coordinatesArray.push([latitude, longitude, 1]);
   }
 
   calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
