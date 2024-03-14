@@ -30,7 +30,7 @@ export class AppComponent implements OnInit {
   public speed!: number; 
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -38,11 +38,10 @@ export class AppComponent implements OnInit {
 
   createMap() {
 
-    this.map = L.map('map').setView([-23.234419534508827, -45.899720000703645], 19);
+    this.map = L.map('map').setView([-23.234419534508827, -45.899720000703645], 18);
 
     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxNativeZoom:19,
-      maxZoom:25,
+      maxZoom: 18,
       minZoom: 10,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
