@@ -27,12 +27,12 @@ export class AppComponent implements OnInit {
   public lastPosition: any = null;
   public lastSpeed: number = 0;
   public lastTimestamp: number = 0;
-  public speed!: number; 
+  public speed!: number;
 
   public pointIcon: any;
 
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -70,7 +70,12 @@ export class AppComponent implements OnInit {
 
   stopTracking() {
     navigator.geolocation.clearWatch(this.watchId)
-    this.pointIcon = L.icon({iconUrl: 'assets/icons/finish.png',iconSize: [32, 32]});
+
+    if (this.pointIcon) {
+      this.map.removeLayer(this.pointIcon);
+    }
+    
+    this.pointIcon = L.icon({ iconUrl: 'assets/icons/finish.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Chagada");
   }
 
@@ -117,11 +122,15 @@ export class AppComponent implements OnInit {
     this.createIcons(latitude, longitude)
   }
 
-  createIcons(latitude:number, longitude:number){
-    const startIcon = L.icon({iconUrl: 'assets/icons/start.png',iconSize: [32, 32]});
+  createIcons(latitude: number, longitude: number) {
+    const startIcon = L.icon({ iconUrl: 'assets/icons/start.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[0], { icon: startIcon }).addTo(this.map).bindPopup("Inicio");
 
-    this.pointIcon = L.icon({iconUrl: 'assets/icons/point.png',iconSize: [32, 32]});
+    if (this.pointIcon) {
+      this.map.removeLayer(this.pointIcon);
+    }
+
+    this.pointIcon = L.icon({ iconUrl: 'assets/icons/point.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Ponto");
   }
 
