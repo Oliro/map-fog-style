@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -48,8 +48,8 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    this.polyline = L.polyline([], { color: 'red', weight: 8, opacity: 0.5 }).addTo(this.map);
-    this.polylineBorder = L.polyline([], { color: 'blue', weight: 5 }).addTo(this.map);
+    this.polyline = L.polyline([], { color: '#400036', weight: 8, opacity: 0.5 }).addTo(this.map);
+    this.polylineBorder = L.polyline([], { color: '#FF81D0', weight: 5 }).addTo(this.map);
     this.heatMap = L.heatLayer([], { radius: 8 });
 
     tiles.addTo(this.map);
@@ -88,7 +88,7 @@ export class AppComponent implements OnInit {
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
-      this.mensagem = 'criando novos pontos - ' + this.pontos + 'accuracy= ' + position.coords.accuracy + ' metros';
+      this.mensagem = 'criando novos pontos - ' + this.pontos + ' - accuracy= ' + position.coords.accuracy + ' metros';
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
