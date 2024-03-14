@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
 
   public coordinatesArray: any[] = [];
   public polyline: any;
+  public polylineBorder: any;
 
   // Constantes para os limites de filtro (ajuste conforme necessário)
   public LIMITE_DESLOCAMENTO = 20; // Limite de deslocamento máximo em metros
@@ -31,12 +32,10 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '0-Inicio';
 
   ngOnInit(): void {
-
     this.createMap();
-
   }
 
   createMap() {
@@ -49,20 +48,14 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    const pathStyle = {
-      color: 'red',
-      weight: 2,
-      smoothFactor: 0.5
-    };
-
-    this.polyline = L.polyline([], pathStyle)
-
+    this.polyline = L.polyline([], { color: 'red', weight: 8, opacity: 0.5 }).addTo(this.map);
+    this.polylineBorder = L.polyline([], { color: 'blue', weight: 5 }).addTo(this.map);
     this.heatMap = L.heatLayer([], { radius: 8 });
 
-    tiles.addTo(this.map)
-    this.heatMap.addTo(this.map)
+    tiles.addTo(this.map);
     this.polyline.addTo(this.map);
-
+    this.polylineBorder.addTo(this.map);
+    this.heatMap.addTo(this.map)
   }
 
   startTracking() {
@@ -125,6 +118,7 @@ export class AppComponent implements OnInit {
 
   addPathLine(latitude: number, longitude: number) {
     this.polyline.addLatLng([latitude, longitude]);
+    this.polylineBorder.addLatLng([latitude, longitude]);
     this.heatMap.addLatLng([latitude, longitude, 1]);
     this.coordinatesArray.push([latitude, longitude, 1]);
   }
