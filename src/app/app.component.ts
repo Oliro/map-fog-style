@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   public polyline: any;
   public polylineBorder: any;
 
-  public displacementLimit = 20; // Limite de deslocamento máximo em metros
+  public displacementLimit = 10; // Limite de deslocamento máximo em metros
   public speedLimit = 5; // Limite de velocidade máxima em metros por segundo
   public accelerationLimit = 20; // Limite de aceleração máxima em metros por segundo ao quadrado
   public timeInterval = 500; // Intervalo de tempo entre leituras de GPS em milissegundos
@@ -29,8 +29,10 @@ export class AppComponent implements OnInit {
   public lastTimestamp: number = 0;
   public speed!: number; 
 
+  public pointIcon: any;
+
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '0-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -46,8 +48,8 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    this.polyline = L.polyline([], { color: '#400036', weight: 8, opacity: 0.5 }).addTo(this.map);
-    this.polylineBorder = L.polyline([], { color: '#FF81D0', weight: 5 }).addTo(this.map);
+    this.polyline = L.polyline([], { color: '#400036', weight: 8, opacity: 1 }).addTo(this.map);
+    this.polylineBorder = L.polyline([], { color: '#FF81D0', weight: 6 }).addTo(this.map);
     this.heatMap = L.heatLayer([], { radius: 8 });
 
     tiles.addTo(this.map);
@@ -68,6 +70,8 @@ export class AppComponent implements OnInit {
 
   stopTracking() {
     navigator.geolocation.clearWatch(this.watchId)
+    this.pointIcon = L.icon({iconUrl: 'assets/icons/finish.png',iconSize: [32, 32]});
+    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Chagada");
   }
 
   updateCoordinates(position: any) {
@@ -110,6 +114,15 @@ export class AppComponent implements OnInit {
     this.polylineBorder.addLatLng([latitude, longitude]);
     this.heatMap.addLatLng([latitude, longitude, 1]);
     this.coordinatesArray.push([latitude, longitude, 1]);
+    this.createIcons(latitude, longitude)
+  }
+
+  createIcons(latitude:number, longitude:number){
+    const startIcon = L.icon({iconUrl: 'assets/icons/start.png',iconSize: [32, 32]});
+    L.marker(this.coordinatesArray[0], { icon: startIcon }).addTo(this.map).bindPopup("Inicio");
+
+    this.pointIcon = L.icon({iconUrl: 'assets/icons/point.png',iconSize: [32, 32]});
+    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Ponto");
   }
 
   calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
