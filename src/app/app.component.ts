@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '5-Inicio';
 
   ngOnInit(): void {
 
@@ -48,16 +48,6 @@ export class AppComponent implements OnInit {
       minZoom: 10,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
-
-    // const pathStyle = {
-    //   color: 'red',
-    //   weight: 2,
-    //   smoothFactor: 0.5
-    // };
-
-    // const polygon = L.polyline(
-    //   this.coordinatesArray, pathStyle
-    // );
 
     this.heatMap = L.heatLayer([], { radius: 8 });
 
@@ -77,7 +67,7 @@ export class AppComponent implements OnInit {
 
       this.watchId = navigator.geolocation.watchPosition(this.updateCoordinates.bind(this), (error) => error, options);
 
-      
+
     } else {
       alert("Navegador não suportado")
     }
@@ -90,51 +80,38 @@ export class AppComponent implements OnInit {
   updateCoordinates(position: any) {
     //debugger
 
-    const pathStyle = {
-      color: 'red',
-      weight: 2,
-      smoothFactor: 0.5
-    };
-
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
     const timestamp_atual = position.timestamp;
+
 
     // Verificar se há uma posição anterior para calcular o deslocamento
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
-      this.mensagem = 'criando novos pontos - ' + this.pontos + 'accuracy= '+position.coords.accuracy+' metros';
+      this.mensagem = 'criando novos pontos - ' + this.pontos + 'accuracy= ' + position.coords.accuracy + ' metros';
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
-      console.log(distancia)
+
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = timestamp_atual - this.lastTimestamp;
 
       // Calcular a velocidade em metros por segundo
       const velocidade = distancia / diferenca_tempo * 1000; // Convertendo para metros por segundo
 
-      // Calcular a aceleração em metros por segundo ao quadrado
-      //const aceleracao = (velocidade - this.lastVelocidade) / (diferenca_tempo / 1000); // Convertendo para segundos
-
-      // console.log(this.LIMITE_DESLOCAMENTO + '-> distancia = ', distancia, '-' , +this.LIMITE_VELOCIDADE+'-> velocidade= ',
-      //  velocidade , this.LIMITE_ACELERACAO + '-> aceleração= ', Math.abs(aceleracao) + this.INTERVALO_TEMPO+ '-> tempo='+diferenca_tempo);
-
-      // this.mensagem = 'distancia = ' + distancia + ' - velocidade = ' + velocidade + ' - aceleração = ' + Math.abs(aceleracao);
-
       // Aplicar os filtros
       if (distancia <= this.LIMITE_DESLOCAMENTO && velocidade <= this.LIMITE_VELOCIDADE && diferenca_tempo >= this.INTERVALO_TEMPO) {
         // Adicionar as novas coordenadas
         this.coordinatesArray.push([latitude, longitude, 1]);
 
-
         // Atualizar o polyline com as novas coordenadas
         if (this.polyline) {
-          this.polyline.addLatLng([latitude, longitude]);
-          this.heatMap.addLatLng([latitude, longitude, 1]);
+          this.addPathLine(latitude,longitude)
         } else {
-          this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+
+          this.polyline = this.createPolyline()
+
         }
       } else {
         console.log('Ponto descartado devido a filtros.');
@@ -148,7 +125,7 @@ export class AppComponent implements OnInit {
 
       // Criar polyline se não existir ainda
       if (!this.polyline) {
-        this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+        this.polyline = this.createPolyline()
       }
     }
 
@@ -177,10 +154,21 @@ export class AppComponent implements OnInit {
     return distancia;
   }
 
+  createPolyline() {
+    L.polyline(this.coordinatesArray, { color: '#400036', weight: 8, opacity: 0.5 }).addTo(this.map);
+    L.polyline(this.coordinatesArray, { color: '#FF81D0', weight: 5 }).addTo(this.map);
+  }
+
+  // não esta chamando ainda, falta implementar
+  addPathLine(latitude: number, longitude:number){
+    this.polyline.addLatLng([latitude, longitude]);
+    this.heatMap.addLatLng([latitude, longitude, 1]);
+  }
+
   ngOnDestroy() {
     if (this.map) {
       this.map.remove();
     }
-
   }
+
 }
