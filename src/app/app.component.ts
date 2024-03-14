@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
   public pointIcon: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -126,12 +126,12 @@ export class AppComponent implements OnInit {
     const startIcon = L.icon({ iconUrl: 'assets/icons/start.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[0], { icon: startIcon }).addTo(this.map).bindPopup("Inicio");
 
-    if (this.pointIcon) {
-      this.map.removeLayer(this.pointIcon);
-    }
+    // if (this.pointIcon) {
+    //   this.map.removeLayer(this.pointIcon);
+    // }
 
-    this.pointIcon = L.icon({ iconUrl: 'assets/icons/point.png', iconSize: [32, 32] });
-    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Ponto");
+    // this.pointIcon = L.icon({ iconUrl: 'assets/icons/point.png', iconSize: [32, 32] });
+    // L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Ponto");
   }
 
   calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
