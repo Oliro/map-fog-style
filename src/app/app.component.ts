@@ -31,7 +31,7 @@ export class AppComponent implements OnInit {
   public velocidade!: number; // Declaração da variável velocidade fora do bloco if/else
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '6-Inicio';
 
   ngOnInit(): void {
 
@@ -49,11 +49,19 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
+    const pathStyle = {
+      color: 'red',
+      weight: 2,
+      smoothFactor: 0.5
+    };
+
+    this.polyline = L.polyline([], pathStyle)
 
     this.heatMap = L.heatLayer([], { radius: 8 });
 
     tiles.addTo(this.map)
     this.heatMap.addTo(this.map)
+    this.polyline.addTo(this.map);
 
   }
 
@@ -79,13 +87,9 @@ export class AppComponent implements OnInit {
   }
 
   updateCoordinates(position: any) {
-    //debugger
+   // debugger
 
-    const pathStyle = {
-      color: 'red',
-      weight: 2,
-      smoothFactor: 0.5
-    };
+
 
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
@@ -119,7 +123,8 @@ export class AppComponent implements OnInit {
           this.polyline.addLatLng([latitude, longitude]);
           this.heatMap.addLatLng([latitude, longitude, 1]);
         } else {
-          this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+          console.log('não deve entrar aqui')
+          //this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
         }
       } else {
         console.log('Ponto descartado devido a filtros.');
@@ -129,11 +134,12 @@ export class AppComponent implements OnInit {
       this.mensagem = "Cria primeiro ponto"
       // Se não houver posição anterior, adicione a nova posição
       this.coordinatesArray.push([latitude, longitude, 1]);
+      this.polyline.addLatLng([latitude, longitude]);
       this.heatMap.addLatLng([latitude, longitude, 1]);
-
-      // Criar polyline se não existir ainda
+       // Criar polyline se não existir ainda
       if (!this.polyline) {
-        this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
+        console.log('não deve entrar aqui')
+        //this.polyline = L.polyline(this.coordinatesArray, pathStyle).addTo(this.map);
       }
     }
 
