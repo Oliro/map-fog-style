@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
   public pointIcon: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -79,6 +79,7 @@ export class AppComponent implements OnInit {
 
         if (!firstPointView || timeToReturnViewPoint > 10) {
           this.updateCurrentViewPoint(currentCoordenate)
+          firstPointView = true;
           timeToReturnViewPoint = 0
         }
 
