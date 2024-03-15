@@ -50,7 +50,7 @@ export class AppComponent implements OnInit {
     });
 
     this.polyline = L.polyline([], { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
-    this.polylineBorder = L.polyline([], { color: '#025159', weight: 5 }).addTo(this.map);
+    this.polylineBorder = L.polyline([], { color: '#025159', weight: 4 }).addTo(this.map);
     this.heatMap = L.heatLayer([], { radius: 8 });
 
     tiles.addTo(this.map);
@@ -70,7 +70,7 @@ export class AppComponent implements OnInit {
 
     let firstPointView: boolean = false;
     let timeToReturnViewPoint = 0;
-    const limitToReturnView = 30;
+    const limitToReturnView = 20;
 
     if (navigator.geolocation) {
       const options = { enableHighAccuracy: true, timeout: 100, maximumAge: 0 };
