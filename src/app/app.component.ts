@@ -33,7 +33,7 @@ export class AppComponent implements OnInit {
   public pointIcon: any;
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -49,8 +49,8 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    this.polyline = L.polyline([], { color: '#400036', weight: 8, opacity: 1 }).addTo(this.map);
-    this.polylineBorder = L.polyline([], { color: '#FF81D0', weight: 6 }).addTo(this.map);
+    this.polyline = L.polyline([], { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
+    this.polylineBorder = L.polyline([], { color: '#025159', weight: 5 }).addTo(this.map);
     this.heatMap = L.heatLayer([], { radius: 8 });
 
     tiles.addTo(this.map);
@@ -69,8 +69,16 @@ export class AppComponent implements OnInit {
 
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        this.map.setView([latitude, longitude], 18);
-        
+        this.map.flyTo([latitude, longitude], 18, {
+          duration: 2,
+          easeLinearity: 0.25,
+          animate: true
+        });
+
+        setTimeout(() => {
+          this.zoneToExplore();
+        }, 3000);
+
       }, (error) => error, options);
     } else {
       alert("Navegador não suportado")
@@ -83,7 +91,7 @@ export class AppComponent implements OnInit {
     if (this.pointIcon) {
       this.map.removeLayer(this.pointIcon);
     }
-    
+
     this.pointIcon = L.icon({ iconUrl: 'assets/icons/finish.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Chagada");
   }
@@ -163,14 +171,29 @@ export class AppComponent implements OnInit {
   }
 
   calculateTotalDistanceLeafletMethod(polyline: any) {
-    var totalDistance = 0;
-    var latlngs = polyline.getLatLngs();
-    for (var i = 0; i < latlngs.length - 1; i++) {
-        totalDistance += latlngs[i].distanceTo(latlngs[i + 1]);
+    let totalDistance = 0;
+    const latlngs = polyline.getLatLngs();
+    for (let i = 0; i < latlngs.length - 1; i++) {
+      totalDistance += latlngs[i].distanceTo(latlngs[i + 1]);
     }
     return totalDistance / 1000; // Convertendo para quilômetros
-}
+  }
 
+  zoneToExplore() {
+
+    const sizeZone: number = 50;
+
+    const circle = L.circle([-23.234563600752985, -45.89585548053398], {
+      color: '#FA7F08',
+      fillColor: '#F24405',
+      fillOpacity: 0.3,
+      weight: 1,
+      radius: sizeZone
+    }).addTo(this.map);
+
+    circle.bindPopup("Zona de trabalho = " + sizeZone*2 + ' metros de diâmetro');
+
+  }
 
   ngOnDestroy() {
     if (this.map) this.map.remove();
