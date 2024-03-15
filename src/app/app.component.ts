@@ -32,10 +32,8 @@ export class AppComponent implements OnInit {
   public totalDistance: number = 0;
   public pointIcon: any;
 
-  public timeoutId: any;
-
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -67,40 +65,38 @@ export class AppComponent implements OnInit {
   }
 
   startTracking() {
+
+    let firstPointView: boolean = false;
+    let timeToReturnViewPoint = 0;
+
     if (navigator.geolocation) {
       const options = { enableHighAccuracy: true, timeout: 100, maximumAge: 0 };
       this.watchId = navigator.geolocation.watchPosition((position) => {
 
         this.updateCoordinates(position);
 
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
+        const currentCoordenate = [position.coords.latitude, position.coords.longitude];
 
-        if (this.timeoutId) {
-          clearTimeout(this.timeoutId);
+        if (!firstPointView || timeToReturnViewPoint > 10) {
+          this.updateCurrentViewPoint(currentCoordenate)
+          timeToReturnViewPoint = 0
         }
 
-        this.timeoutId = setTimeout(() => {
-          console.log('teste')
-          this.map.flyTo([latitude, longitude], 18, {
-            duration: 2,
-            easeLinearity: 0.25,
-            animate: true
-          });
-        }, 2000);
+        timeToReturnViewPoint++;
 
       }, (error) => error, options);
-
-      this.map.on('click touchend', () => {
-        if (this.timeoutId) {
-          clearTimeout(this.timeoutId);
-        }
-      });
-
 
     } else {
       alert("Navegador não suportado")
     }
+  }
+
+  updateCurrentViewPoint(currentPoint: any) {
+    this.map.flyTo(currentPoint, 18, {
+      duration: 2,
+      easeLinearity: 0.25,
+      animate: true
+    });
   }
 
   stopTracking() {
