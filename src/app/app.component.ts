@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
   public timeoutId: any;
 
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -87,9 +87,17 @@ export class AppComponent implements OnInit {
             easeLinearity: 0.25,
             animate: true
           });
-        }, 1000);
+        }, 2000);
 
       }, (error) => error, options);
+
+      this.map.on('click', () => {
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+        }
+      });
+
+
     } else {
       alert("Navegador não suportado")
     }
@@ -201,7 +209,7 @@ export class AppComponent implements OnInit {
       radius: sizeZone
     }).addTo(this.map);
 
-    circle.bindPopup("Zona de trabalho = " + sizeZone*2 + ' metros de diâmetro');
+    circle.bindPopup("Zona de trabalho = " + sizeZone * 2 + ' metros de diâmetro');
 
   }
 
