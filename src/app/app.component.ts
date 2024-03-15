@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
   public timeoutId: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '3-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -91,7 +91,7 @@ export class AppComponent implements OnInit {
 
       }, (error) => error, options);
 
-      this.map.on('click touchstart', () => {
+      this.map.on('click touchmove', () => {
         if (this.timeoutId) {
           clearTimeout(this.timeoutId);
         }
