@@ -32,8 +32,10 @@ export class AppComponent implements OnInit {
   public totalDistance: number = 0;
   public pointIcon: any;
 
+  public timeoutId: any;
+
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '0-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -58,6 +60,10 @@ export class AppComponent implements OnInit {
     this.polylineBorder.addTo(this.map);
     this.heatMap.addTo(this.map)
 
+    setTimeout(() => {
+      this.zoneToExplore();
+    }, 3000);
+
   }
 
   startTracking() {
@@ -69,15 +75,19 @@ export class AppComponent implements OnInit {
 
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        this.map.flyTo([latitude, longitude], 18, {
-          duration: 2,
-          easeLinearity: 0.25,
-          animate: true
-        });
 
-        setTimeout(() => {
-          this.zoneToExplore();
-        }, 3000);
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+        }
+
+        this.timeoutId = setTimeout(() => {
+          console.log('teste')
+          this.map.flyTo([latitude, longitude], 18, {
+            duration: 2,
+            easeLinearity: 0.25,
+            animate: true
+          });
+        }, 1000);
 
       }, (error) => error, options);
     } else {
