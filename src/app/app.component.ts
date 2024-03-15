@@ -29,6 +29,7 @@ export class AppComponent implements OnInit {
   public lastTimestamp: number = 0;
   public speed!: number;
 
+  public totalDistance: number = 0;
   public pointIcon: any;
 
   public pontos: number = 0;
@@ -40,11 +41,11 @@ export class AppComponent implements OnInit {
 
   createMap() {
 
-    this.map = L.map('map').setView([-23.234419534508827, -45.899720000703645], 18);
+    this.map = L.map('map').setView([0, 0], 1);
 
     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      minZoom: 10,
+      minZoom: 0,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
@@ -62,7 +63,15 @@ export class AppComponent implements OnInit {
   startTracking() {
     if (navigator.geolocation) {
       const options = { enableHighAccuracy: true, timeout: 100, maximumAge: 0 };
-      this.watchId = navigator.geolocation.watchPosition(this.updateCoordinates.bind(this), (error) => error, options);
+      this.watchId = navigator.geolocation.watchPosition((position) => {
+
+        this.updateCoordinates(position);
+
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        this.map.setView([latitude, longitude], 18);
+        
+      }, (error) => error, options);
     } else {
       alert("Navegador não suportado")
     }
@@ -91,14 +100,15 @@ export class AppComponent implements OnInit {
       this.mensagem = 'criando novos pontos - ' + this.pontos + ' - accuracy= ' + position.coords.accuracy + ' metros';
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
-      const distancia = this.calcularDistancia(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
+      const distancia = this.calculateDistanceHaversinesFormula(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
       // Calcular o intervalo de tempo entre as leituras de GPS
       const diferenca_tempo = currentTime - this.lastTimestamp;
       // Calcular a velocidade em metros por segundo
       const velocidade = distancia / diferenca_tempo * 1000;
 
       if (distancia <= this.displacementLimit && velocidade <= this.speedLimit && diferenca_tempo >= this.timeInterval) {
-        this.addPathLine(latitude, longitude)
+        this.addPathLine(latitude, longitude);
+        this.totalDistance = this.calculateTotalDistanceLeafletMethod(this.polyline);
       } else {
         console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
@@ -126,15 +136,15 @@ export class AppComponent implements OnInit {
     const startIcon = L.icon({ iconUrl: 'assets/icons/start.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[0], { icon: startIcon }).addTo(this.map).bindPopup("Inicio");
 
-    // if (this.pointIcon) {
-    //   this.map.removeLayer(this.pointIcon);
-    // }
+    if (this.pointIcon) {
+      this.map.removeLayer(this.pointIcon);
+    }
 
-    // this.pointIcon = L.icon({ iconUrl: 'assets/icons/point.png', iconSize: [32, 32] });
-    // L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Ponto");
+    const currentPointIcon = L.icon({ iconUrl: 'assets/icons/point.png', iconSize: [32, 32] });
+    this.pointIcon = L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: currentPointIcon }).addTo(this.map).bindPopup("Ponto");
   }
 
-  calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  calculateDistanceHaversinesFormula(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371e3; // Raio da Terra em metros
     const φ1 = lat1 * Math.PI / 180; // Latitude 1 em radianos
     const φ2 = lat2 * Math.PI / 180; // Latitude 2 em radianos
@@ -151,6 +161,16 @@ export class AppComponent implements OnInit {
 
     return distancia;
   }
+
+  calculateTotalDistanceLeafletMethod(polyline: any) {
+    var totalDistance = 0;
+    var latlngs = polyline.getLatLngs();
+    for (var i = 0; i < latlngs.length - 1; i++) {
+        totalDistance += latlngs[i].distanceTo(latlngs[i + 1]);
+    }
+    return totalDistance / 1000; // Convertendo para quilômetros
+}
+
 
   ngOnDestroy() {
     if (this.map) this.map.remove();
