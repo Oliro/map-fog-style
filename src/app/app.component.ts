@@ -91,16 +91,16 @@ export class AppComponent implements OnInit {
 
       }, (error) => error, options);
 
+      this.map.on('click touchend', () => {
+        if (this.timeoutId) {
+          clearTimeout(this.timeoutId);
+        }
+      });
+
+
     } else {
       alert("Navegador não suportado")
     }
-
-    this.map.on('click touchstart', () => {
-      if (this.timeoutId) {
-        clearTimeout(this.timeoutId);
-      }
-    });
-
   }
 
   stopTracking() {
