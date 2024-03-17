@@ -118,6 +118,10 @@ export class AppComponent implements OnInit {
     const longitude = position.coords.longitude;
     const currentTime = position.timestamp;
 
+    const isInside = this.checkIsInsideAreaToExplore(latitude, longitude)
+    console.log(isInside)
+    if(!isInside)return;
+
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
@@ -133,7 +137,7 @@ export class AppComponent implements OnInit {
       if (distancia <= this.displacementLimit && velocidade <= this.speedLimit && diferenca_tempo >= this.timeInterval) {
         this.addPathLine(latitude, longitude);
         this.totalDistance = this.calculateTotalDistanceLeafletMethod(this.polyline);
-        this.calculeExploredArea(latitude, longitude)
+        this.calculeExploredArea()
       } else {
         console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
@@ -226,45 +230,30 @@ export class AppComponent implements OnInit {
     this.map.fitBounds(cityBoundaryLayer.getBounds());
   }
 
-  calculeExploredArea(latitude: number, longitude: number) {
-    // Verifica se o ponto está dentro da área total
-    const point = turf.point([longitude, latitude]);
-    const areaTotalFeature = this.geoJson().features[0]; // Vamos considerar apenas a primeira feature
-    if (!areaTotalFeature) {
-        return "Nenhuma área total definida";
-    }
-    const areaTotalPolygon = turf.polygon(areaTotalFeature.geometry.coordinates);
-    if (!turf.booleanPointInPolygon(point, areaTotalPolygon)) {
-        return "O ponto não está dentro da área total";
-    }
+  calculeExploredArea() {
 
-    // Calcula a área total
-    const areaTotalGeoJson = turf.area(areaTotalPolygon);
+    if (this.coordinatesArray.length < 3) return;
 
-    // Calcula o buffer do caminho explorado
+    const areaTotalGeoJson = turf.area(this.geoJson())
+
     const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
     const lineString = turf.lineString(invertedCoordinatesArray);
     const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
+    const areaPathExplored = turf.area(buffer);
 
-    // Verifica se o buffer se sobrepõe à área total
-    const intersection = turf.intersect(areaTotalPolygon, buffer);
-    if (!intersection) {
-        return "0%"; // Se não houver sobreposição, então não houve exploração
-    }
+    this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
 
-    // Calcula a área explorada
-    const areaPathExplored = turf.area(intersection);
-    const totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
+    this.totalAreaExplored.toFixed(2) + "%"
 
-    // Verifica se a área explorada ultrapassou 100%
-    if (totalAreaExplored > 100) {
-        return "A área explorada ultrapassou 100%";
-    }
+    console.log(this.totalAreaExplored.toFixed(2) + "%")
+  }
 
-    console.log(totalAreaExplored.toFixed(2) + "%");
-    return totalAreaExplored.toFixed(2) + "%";
-}
-
+  checkIsInsideAreaToExplore(latitude: number, longitude: number) {
+    const point = turf.point([longitude, latitude]);
+    const polygon = turf.polygon(this.geoJson().features[0].geometry.coordinates);
+    const isInside = turf.booleanPointInPolygon(point, polygon);
+    return isInside;
+  }
 
   ngOnDestroy() {
     if (this.map) this.map.remove();
