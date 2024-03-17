@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
   private watchId!: number;
 
   public coordinatesArray: any[] = [];
+  public coordinatesArrayAreaToExplore: any[] = [];
   public polyline: any;
   public polylineBorder: any;
 
@@ -36,7 +37,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '2-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -118,9 +119,7 @@ export class AppComponent implements OnInit {
     const longitude = position.coords.longitude;
     const currentTime = position.timestamp;
 
-    const isInside = this.checkIsInsideAreaToExplore(latitude, longitude)
-    console.log(isInside)
-    if(!isInside)return;
+    this.checkIsInsideAreaToExplore(latitude, longitude)
 
     if (this.lastPosition && this.lastTimestamp) {
 
@@ -231,12 +230,11 @@ export class AppComponent implements OnInit {
   }
 
   calculeExploredArea() {
-
-    if (this.coordinatesArray.length < 3) return;
+    if (this.coordinatesArrayAreaToExplore.length < 3) return;
 
     const areaTotalGeoJson = turf.area(this.geoJson())
 
-    const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
+    const invertedCoordinatesArray = this.coordinatesArrayAreaToExplore.map(coord => [coord[1], coord[0]]);
     const lineString = turf.lineString(invertedCoordinatesArray);
     const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
     const areaPathExplored = turf.area(buffer);
@@ -244,15 +242,15 @@ export class AppComponent implements OnInit {
     this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
 
     this.totalAreaExplored.toFixed(2) + "%"
-
-    console.log(this.totalAreaExplored.toFixed(2) + "%")
   }
 
   checkIsInsideAreaToExplore(latitude: number, longitude: number) {
     const point = turf.point([longitude, latitude]);
     const polygon = turf.polygon(this.geoJson().features[0].geometry.coordinates);
     const isInside = turf.booleanPointInPolygon(point, polygon);
-    return isInside;
+    
+    if(isInside) this.coordinatesArrayAreaToExplore.push([latitude, longitude]);
+     
   }
 
   ngOnDestroy() {
@@ -298,6 +296,8 @@ export class AppComponent implements OnInit {
         }
       ]
     }
+
+    
   }
 
 }
