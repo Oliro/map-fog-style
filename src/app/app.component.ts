@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '3-Inicio';
+  public mensagem = '0-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -227,29 +227,43 @@ export class AppComponent implements OnInit {
   }
 
   calculeExploredArea(latitude: number, longitude: number) {
-
+    // Verifica se o ponto está dentro da área total
     const point = turf.point([longitude, latitude]);
-    const polygon = turf.polygon(this.geoJson().features[0].geometry.coordinates);
-    const isInside = turf.booleanPointInPolygon(point, polygon);
-    if (isInside) {
-      if (this.coordinatesArray.length < 3) return;
-
-      const areaTotalGeoJson = turf.area(this.geoJson())
-  
-      const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
-      const lineString = turf.lineString(invertedCoordinatesArray);
-      const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
-      const areaPathExplored = turf.area(buffer);
-  
-      this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
-  
-      this.totalAreaExplored.toFixed(2) + "%"
-  
-      console.log(this.totalAreaExplored.toFixed(2) + "%")
+    const areaTotalFeature = this.geoJson().features[0]; // Vamos considerar apenas a primeira feature
+    if (!areaTotalFeature) {
+        return "Nenhuma área total definida";
+    }
+    const areaTotalPolygon = turf.polygon(areaTotalFeature.geometry.coordinates);
+    if (!turf.booleanPointInPolygon(point, areaTotalPolygon)) {
+        return "O ponto não está dentro da área total";
     }
 
+    // Calcula a área total
+    const areaTotalGeoJson = turf.area(areaTotalPolygon);
 
-  }
+    // Calcula o buffer do caminho explorado
+    const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
+    const lineString = turf.lineString(invertedCoordinatesArray);
+    const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
+
+    // Verifica se o buffer se sobrepõe à área total
+    const intersection = turf.intersect(areaTotalPolygon, buffer);
+    if (!intersection) {
+        return "0%"; // Se não houver sobreposição, então não houve exploração
+    }
+
+    // Calcula a área explorada
+    const areaPathExplored = turf.area(intersection);
+    const totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
+
+    // Verifica se a área explorada ultrapassou 100%
+    if (totalAreaExplored > 100) {
+        return "A área explorada ultrapassou 100%";
+    }
+
+    console.log(totalAreaExplored.toFixed(2) + "%");
+    return totalAreaExplored.toFixed(2) + "%";
+}
 
 
   ngOnDestroy() {
