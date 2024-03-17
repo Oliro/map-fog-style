@@ -33,8 +33,10 @@ export class AppComponent implements OnInit {
   public totalDistance: number = 0;
   public pointIcon: any;
 
+  public totalAreaExplored: any;
+
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '0-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -70,8 +72,6 @@ export class AppComponent implements OnInit {
   startTracking() {
 
     let firstPointView: boolean = false;
-    let timeToReturnViewPoint = 0;
-    const limitToReturnView = 20;
 
     if (navigator.geolocation) {
       const options = { enableHighAccuracy: true, timeout: 100, maximumAge: 0 };
@@ -81,13 +81,10 @@ export class AppComponent implements OnInit {
 
         const currentCoordenate = [position.coords.latitude, position.coords.longitude];
 
-        if (!firstPointView || timeToReturnViewPoint > limitToReturnView) {
+        if (!firstPointView) {
           this.updateCurrentViewPoint(currentCoordenate)
           firstPointView = true;
-          timeToReturnViewPoint = 0
         }
-
-        timeToReturnViewPoint++;
 
       }, (error) => error, options);
 
@@ -136,7 +133,7 @@ export class AppComponent implements OnInit {
       if (distancia <= this.displacementLimit && velocidade <= this.speedLimit && diferenca_tempo >= this.timeInterval) {
         this.addPathLine(latitude, longitude);
         this.totalDistance = this.calculateTotalDistanceLeafletMethod(this.polyline);
-        this.calculeExploredArea()
+        this.calculeExploredArea(latitude, longitude)
       } else {
         console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
@@ -229,20 +226,34 @@ export class AppComponent implements OnInit {
     this.map.fitBounds(cityBoundaryLayer.getBounds());
   }
 
-  calculeExploredArea() {
+  calculeExploredArea(latitude: number, longitude: number) {
+
+    const point = turf.point([longitude, latitude]);
+    const polygon = turf.polygon(this.geoJson().features[0].geometry.coordinates);
+    const isInside = turf.booleanPointInPolygon(point, polygon);
+    if (isInside) {
+      console.log('As coordenadas estão dentro da área!');
+    } else {
+      console.log('As coordenadas estão fora da área!');
+      return
+    }
+
     if (this.coordinatesArray.length < 3) return;
 
     const areaTotalGeoJson = turf.area(this.geoJson())
-    console.log(areaTotalGeoJson + 'total area geoJson')
+
     const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
     const lineString = turf.lineString(invertedCoordinatesArray);
     const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
     const areaPathExplored = turf.area(buffer);
 
-    const totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
+    this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
 
-    return totalAreaExplored.toFixed(2) + "%"
+    this.totalAreaExplored.toFixed(2) + "%"
+
+    console.log(this.totalAreaExplored.toFixed(2) + "%")
   }
+
 
   ngOnDestroy() {
     if (this.map) this.map.remove();
