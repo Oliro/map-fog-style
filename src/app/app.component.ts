@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '3-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -232,26 +232,23 @@ export class AppComponent implements OnInit {
     const polygon = turf.polygon(this.geoJson().features[0].geometry.coordinates);
     const isInside = turf.booleanPointInPolygon(point, polygon);
     if (isInside) {
-      console.log('As coordenadas estão dentro da área!');
-    } else {
-      console.log('As coordenadas estão fora da área!');
-      return
+      if (this.coordinatesArray.length < 3) return;
+
+      const areaTotalGeoJson = turf.area(this.geoJson())
+  
+      const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
+      const lineString = turf.lineString(invertedCoordinatesArray);
+      const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
+      const areaPathExplored = turf.area(buffer);
+  
+      this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
+  
+      this.totalAreaExplored.toFixed(2) + "%"
+  
+      console.log(this.totalAreaExplored.toFixed(2) + "%")
     }
 
-    if (this.coordinatesArray.length < 3) return;
 
-    const areaTotalGeoJson = turf.area(this.geoJson())
-
-    const invertedCoordinatesArray = this.coordinatesArray.map(coord => [coord[1], coord[0]]);
-    const lineString = turf.lineString(invertedCoordinatesArray);
-    const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
-    const areaPathExplored = turf.area(buffer);
-
-    this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
-
-    this.totalAreaExplored.toFixed(2) + "%"
-
-    console.log(this.totalAreaExplored.toFixed(2) + "%")
   }
 
 
