@@ -1,11 +1,8 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import * as L from 'leaflet';
 import 'leaflet.heat';
 import * as turf from '@turf/turf';
-
-
-import * as THREE from 'three';
 
 @Component({
   selector: 'app-root',
@@ -312,111 +309,4 @@ export class AppComponent implements OnInit {
     
   }
 
-
-
-
-
-
-
-  @ViewChild('arCanvas') arCanvas!: ElementRef<HTMLCanvasElement>;
-  private renderer!: THREE.WebGLRenderer;
-  private scene!: THREE.Scene;
-  private camera!: THREE.PerspectiveCamera;
-  private xrSession: XRSession | null = null;
-  private xrRefSpace: XRReferenceSpace | null = null;
-  private sessionRequested: boolean = false;
-
-  constructor(private elRef: ElementRef) { }
-
-  async ngAfterViewInit(){
-    // Inicialize a cena Three.js
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.xr.enabled = true;
-    this.renderer.setClearColor(0xffffff, 0);
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.elRef.nativeElement.appendChild(this.renderer.domElement);
-
-
-    
-    this.scene = new THREE.Scene();
-
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-    this.camera.position.set(0, 1.6, 0);
-
-    // Configuração da realidade aumentada
-    const session = await (navigator.xr?.requestSession('immersive-ar') || null);
-    this.xrSession = session;
-    const referenceSpace = await session?.requestReferenceSpace('local');
-    this.xrRefSpace = referenceSpace || null;
-    const viewerPose = await session?.requestAnimationFrame(this.onXRFrame.bind(this));
-
-    // Adicionando um cubo na cena
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    this.scene.add(cube);
-
-    // Adicione outros objetos, luzes e configurações da cena conforme necessário
-
-    this.camera.position.z = 0;
-
-    // Inicie a renderização
-    session?.requestAnimationFrame(this.onXRFrame.bind(this));
-
-    
-  }
-
-
-  async requestXRSession() {
-    try {
-      if (!this.sessionRequested) {
-        const session = await navigator.xr?.requestSession('immersive-ar');
-        this.xrSession = session || null;
-        const referenceSpace = await session?.requestReferenceSpace('local');
-        this.xrRefSpace = referenceSpace || null;
-        this.sessionRequested = true;
-        this.renderer.xr.setReferenceSpaceType('local');
-        this.renderer.xr.setSession(this.xrSession);
-        this.xrSession?.addEventListener('end', () => {
-          // Executar ações quando a sessão terminar, se necessário
-        });
-        this.xrSession?.requestAnimationFrame(this.onXRFrame.bind(this));
-      }
-    } catch (error) {
-      console.error('Failed to start XR session:', error);
-    }
-  }
-
-  @HostListener('click')
-  onClick() {
-    this.requestXRSession();
-  }
-  
-  async onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
-    const session = this.xrSession;
-    const refSpace = this.xrRefSpace;
-
-    if (!session || !refSpace) return;
-
-    // Atualize o frame XR
-    const pose = await frame.getViewerPose(refSpace);
-
-    if (pose) {
-      // Atualize a posição e a orientação da câmera com base no frame XR
-      const viewMatrix = new THREE.Matrix4().fromArray(pose.transform.matrix);
-      this.camera.matrix = viewMatrix;
-      this.camera.updateMatrixWorld(true);
-
-      // Renderize a cena
-      this.renderer.render(this.scene, this.camera);
-
-      // Solicite o próximo frame
-      session.requestAnimationFrame(this.onXRFrame.bind(this));
-    }
-  }
-
-
-
-  
 }
