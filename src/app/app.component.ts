@@ -40,7 +40,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -336,9 +336,13 @@ export class AppComponent implements OnInit {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.elRef.nativeElement.appendChild(this.renderer.domElement);
 
+
+    
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    this.camera.position.set(0, 1.6, 0);
 
     // Configuração da realidade aumentada
     const session = await (navigator.xr?.requestSession('immersive-ar') || null);
@@ -359,6 +363,8 @@ export class AppComponent implements OnInit {
 
     // Inicie a renderização
     session?.requestAnimationFrame(this.onXRFrame.bind(this));
+
+    
   }
 
 
