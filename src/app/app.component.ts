@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '5-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
     this.map = L.map('map').setView([0, 0], 1);
 
     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
+      maxZoom: 19,
       minZoom: 0,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
@@ -95,7 +95,7 @@ export class AppComponent implements OnInit {
   }
 
   updateCurrentViewPoint(currentPoint: any) {
-    this.map.flyTo(currentPoint, 18, {
+    this.map.flyTo(currentPoint, 19, {
       duration: 2,
       easeLinearity: 0.25,
       animate: true
@@ -218,7 +218,7 @@ export class AppComponent implements OnInit {
   geoJsonDrawLimit() {
     const cityBoundaryLayer = L.geoJSON(this.geoJson(), {
       style: {
-        fillColor: 'rgba(255, 0, 0, 0.5)', // Vermelho com 50% de transparência
+        fillColor: 'rgba(255, 0, 0, 0.5)',
         fillOpacity: 0,
         color: '#8C034E',
         weight: 2,
@@ -227,6 +227,16 @@ export class AppComponent implements OnInit {
     }).addTo(this.map);
 
     this.map.fitBounds(cityBoundaryLayer.getBounds());
+
+
+
+
+    const areaTotalGeoJson = turf.area(this.geoJson())
+    L.popup()
+    .setLatLng(cityBoundaryLayer.getBounds().getCenter())
+    .setContent("Área: " + areaTotalGeoJson.toFixed(2) + " m<sup>2</sup>")
+    .openOn(this.map);
+
   }
 
   calculeExploredArea() {
@@ -241,7 +251,7 @@ export class AppComponent implements OnInit {
 
     this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
 
-    this.totalAreaExplored.toFixed(2) + "%"
+    return this.totalAreaExplored.toFixed(2) + "%"
   }
 
   checkIsInsideAreaToExplore(latitude: number, longitude: number) {
@@ -270,24 +280,24 @@ export class AppComponent implements OnInit {
             "coordinates": [
               [
                 [
-                  -45.89972421261035,
-                  -23.234647365628973
+                  -45.89634664432393,
+                  -23.23426051912533
                 ],
                 [
-                  -45.899742036066755,
-                  -23.234454000371173
+                  -45.89726763410698,
+                  -23.23440391159032
                 ],
                 [
-                  -45.899790331884105,
-                  -23.234458226937136
+                  -45.89725845480686,
+                  -23.235070262785584
                 ],
                 [
-                  -45.899773658328115,
-                  -23.234652648828728
+                  -45.89632522595693,
+                  -23.2350280887581
                 ],
                 [
-                  -45.89972421261035,
-                  -23.234647365628973
+                  -45.89634664432393,
+                  -23.23426051912533
                 ]
               ]
             ],
