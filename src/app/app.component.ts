@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '0-Inicio';
 
   ngOnInit(): void {
     this.createMap();
@@ -55,7 +55,7 @@ export class AppComponent implements OnInit {
 
     this.polyline = L.polyline([], { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
     this.polylineBorder = L.polyline([], { color: '#025159', weight: 4 }).addTo(this.map);
-    this.heatMap = L.heatLayer([], { radius: 8 });
+    this.heatMap = L.heatLayer([], { radius: 16 });
 
     tiles.addTo(this.map);
     this.polyline.addTo(this.map);
@@ -110,7 +110,7 @@ export class AppComponent implements OnInit {
     }
 
     this.pointIcon = L.icon({ iconUrl: 'assets/icons/finish.png', iconSize: [32, 32] });
-    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Chagada");
+    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: this.pointIcon }).addTo(this.map).bindPopup("Chegada");
   }
 
   updateCoordinates(position: any) {
@@ -155,8 +155,8 @@ export class AppComponent implements OnInit {
   addPathLine(latitude: number, longitude: number) {
     this.polyline.addLatLng([latitude, longitude]);
     this.polylineBorder.addLatLng([latitude, longitude]);
-    this.heatMap.addLatLng([latitude, longitude, 1]);
-    this.coordinatesArray.push([latitude, longitude, 1]);
+    this.heatMap.addLatLng([latitude, longitude, 2]);
+    this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
   }
 
@@ -236,7 +236,7 @@ export class AppComponent implements OnInit {
 
     const invertedCoordinatesArray = this.coordinatesArrayAreaToExplore.map(coord => [coord[1], coord[0]]);
     const lineString = turf.lineString(invertedCoordinatesArray);
-    const buffer = turf.buffer(lineString, 0.001, { units: 'kilometers' });
+    const buffer = turf.buffer(lineString, 0.002, { units: 'kilometers' });
     const areaPathExplored = turf.area(buffer);
 
     this.totalAreaExplored = (areaPathExplored / areaTotalGeoJson) * 100;
