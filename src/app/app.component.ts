@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '1-Inicio';
 
   ngOnInit(): void {
     this.createMap();

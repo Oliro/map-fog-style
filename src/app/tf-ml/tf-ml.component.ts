@@ -24,7 +24,7 @@ export class TfMlComponent implements OnInit {
     const canvas = this.canvas.nativeElement;
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: {facingMode: 'environment'} }); //'user' para câmera frontal, 'environment' para câmera traseira
       video.srcObject = stream;
 
       video.onloadedmetadata = () => {
@@ -83,5 +83,6 @@ export class TfMlComponent implements OnInit {
 
     requestAnimationFrame(() => this.detectObjects(video, model, canvas));
   }
+
   
 }
