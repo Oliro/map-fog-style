@@ -1,0 +1,19 @@
+.video-container {
+    position: relative;
+  }
+  
+  video {
+    width: 20rem; 
+    height: auto; 
+  }
+  
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20rem; 
+    height: auto;
+  }
+
+
+  

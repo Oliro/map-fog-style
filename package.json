@@ -18,6 +18,8 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
+    "@tensorflow-models/coco-ssd": "^2.2.3",
+    "@tensorflow/tfjs": "^4.17.0",
     "@turf/turf": "^6.5.0",
     "@types/three": "^0.162.0",
     "leaflet": "^1.9.4",
