@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.heat';
 import * as turf from '@turf/turf';
+import { BgGpsService } from './services/bg-gps.service';
+import { BackgroundGeolocationResponse } from '@ionic-native/background-geolocation/ngx';
 
 @Component({
   selector: 'app-root',
@@ -37,9 +39,23 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '2-Inicio';
 
+  constructor(private geolocationService: BgGpsService){}
   ngOnInit(): void {
+
+    this.geolocationService.startBackgroundGeolocation().subscribe(
+      (location: BackgroundGeolocationResponse) => {
+        this.mensagem = 'funcionando em segundo plano';
+        console.log('funcionando em segundo plano')
+      },
+      error => {
+        this.mensagem = 'erro não funciona';
+        console.log('erro não funciona', error)
+      }
+    );
+
+    
     this.createMap();
   }
 
@@ -124,7 +140,7 @@ export class AppComponent implements OnInit {
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
-      this.mensagem = 'criando novos pontos - ' + this.pontos + ' - accuracy= ' + position.coords.accuracy + ' metros';
+      //this.mensagem = 'criando novos pontos - ' + this.pontos + ' - accuracy= ' + position.coords.accuracy + ' metros';
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calculateDistanceHaversinesFormula(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
@@ -139,10 +155,10 @@ export class AppComponent implements OnInit {
         this.calculeExploredArea()
       } else {
         console.log('Ponto descartado devido a filtros.');
-        this.mensagem = 'Ponto descartado devido a filtros.'
+        //this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
-      this.mensagem = "Cria primeiro ponto"
+      //this.mensagem = "Cria primeiro ponto"
       this.addPathLine(latitude, longitude)
     }
 
