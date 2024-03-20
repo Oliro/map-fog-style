@@ -38,9 +38,9 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '5-Inicio';
+  public mensagem = '0-Inicio';
 
-  public objectFound: any[] = [];
+  public objectFound: any;
 
   constructor(private tfMlStateService: TfMlService){}
 
@@ -164,8 +164,8 @@ export class AppComponent implements OnInit {
     this.heatMap.addLatLng([latitude, longitude, 2]);
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
-    console.log(this.objectFound, 'states ok')
-    if(this.objectFound)this.markerObjectFound();
+    console.log(this.objectFound, '-states ok - ', this.objectFound.class)
+    if(this.objectFound.class)this.markerObjectFound();
   }
 
   createIcons() {
