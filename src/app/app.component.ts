@@ -38,14 +38,17 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '0-Inicio';
+  public mensagem = '1-Inicio';
 
   public objectFound: any;
 
-  constructor(private tfMlStateService: TfMlService){}
+  
+  private objectFoundMarkerAdded = false;
+  
+  constructor(private tfMlStateService: TfMlService) { }
 
   ngOnInit(): void {
-    this.tfMlStateService.objectFound$.subscribe((result) => {this.objectFound = result, console.log(this.objectFound, 'states ok-before')})
+    this.tfMlStateService.objectFound$.subscribe((result) => { this.objectFound = result, console.log(this.objectFound, 'states ok-before') })
     this.createMap();
   }
 
@@ -165,7 +168,7 @@ export class AppComponent implements OnInit {
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
     console.log(this.objectFound, '-states ok - ', this.objectFound.class)
-    if(this.objectFound.class)this.markerObjectFound();
+    if (this.objectFound.class) this.markerObjectFound();
   }
 
   createIcons() {
@@ -238,9 +241,9 @@ export class AppComponent implements OnInit {
 
     const areaTotalGeoJson = turf.area(this.geoJson())
     L.popup()
-    .setLatLng(cityBoundaryLayer.getBounds().getCenter())
-    .setContent("Área: " + areaTotalGeoJson.toFixed(2) + " m<sup>2</sup>")
-    .openOn(this.map);
+      .setLatLng(cityBoundaryLayer.getBounds().getCenter())
+      .setContent("Área: " + areaTotalGeoJson.toFixed(2) + " m<sup>2</sup>")
+      .openOn(this.map);
 
   }
 
@@ -263,19 +266,24 @@ export class AppComponent implements OnInit {
     const point = turf.point([longitude, latitude]);
     const polygon = turf.polygon(this.geoJson().features[0].geometry.coordinates);
     const isInside = turf.booleanPointInPolygon(point, polygon);
-    
-    if(isInside) this.coordinatesArrayAreaToExplore.push([latitude, longitude]);
-     
+
+    if (isInside) this.coordinatesArrayAreaToExplore.push([latitude, longitude]);
+
   }
 
   ngOnDestroy() {
     if (this.map) this.map.remove();
   }
 
-  markerObjectFound(){
-    console.log(this.objectFound, 'states ok - after')
-    const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/traffic-light.png', iconSize: [32, 32] });
-    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
+  markerObjectFound() {
+    if (!this.objectFoundMarkerAdded) {
+      console.log(this.objectFound, 'states ok - after')
+      const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/traffic-light.png', iconSize: [32, 32] });
+      L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
+
+      this.objectFoundMarkerAdded = true;
+
+    }
   }
 
   geoJson(): any {
@@ -317,7 +325,7 @@ export class AppComponent implements OnInit {
         }
       ]
     }
-    
+
   }
 
 }
