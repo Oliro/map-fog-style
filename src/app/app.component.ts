@@ -38,7 +38,7 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '0-Inicio';
 
   public objectFound: any;
 
@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
   constructor(private tfMlStateService: TfMlService) { }
 
   ngOnInit(): void {
-    this.tfMlStateService.objectFound$.subscribe((result) => { this.objectFound = result, console.log(this.objectFound, 'states ok-before') })
+    this.tfMlStateService.objectFound$.subscribe((result) => this.objectFound = result)
     this.createMap();
   }
 
@@ -147,7 +147,6 @@ export class AppComponent implements OnInit {
         this.totalDistance = this.calculateTotalDistanceLeafletMethod(this.polyline);
         this.calculeExploredArea()
       } else {
-        console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
@@ -167,8 +166,7 @@ export class AppComponent implements OnInit {
     this.heatMap.addLatLng([latitude, longitude, 2]);
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
-    console.log(this.objectFound, '-states ok - ', this.objectFound.class)
-    if (this.objectFound.class) this.markerObjectFound();
+    if (this.objectFound.prediction) this.markerObjectFound();
   }
 
   createIcons() {
@@ -277,13 +275,34 @@ export class AppComponent implements OnInit {
 
   markerObjectFound() {
     if (!this.objectFoundMarkerAdded) {
-      console.log(this.objectFound, 'states ok - after')
       const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/traffic-light.png', iconSize: [32, 32] });
-      L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
+      let objectFoundMarker = L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
+
+      const blobPhoto = this.createPhotoBase64ToBlob();
+
+      objectFoundMarker.bindPopup(`<img src="${blobPhoto}" width="150">`);
 
       this.objectFoundMarkerAdded = true;
 
+      objectFoundMarker.on('click', () => {
+        objectFoundMarker.openPopup();
+      });
+
     }
+  }
+
+  createPhotoBase64ToBlob(){
+    // Cria um Blob a partir da imagem em base64 (substitua 'this.objectFound.photo' com sua própria variável)
+    const byteCharacters = atob(this.objectFound.photo.split(',')[1]);
+    const byteArray = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteArray[i] = byteCharacters.charCodeAt(i);
+    }
+    const blob = new Blob([byteArray], { type: 'image/png' });
+
+    // Cria a URL do objeto Blob
+    const imageUrl = URL.createObjectURL(blob);
+    return imageUrl;
   }
 
   geoJson(): any {

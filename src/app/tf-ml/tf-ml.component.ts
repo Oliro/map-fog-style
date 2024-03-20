@@ -51,9 +51,7 @@ export class TfMlComponent implements OnInit {
     if (predictions.length > 0) {
       predictions.forEach((prediction: any) => {
 
-        const foundObject = this.checkIsObjectSelected(prediction);
-
-        if (foundObject) { console.log("Objeto encontrado");}
+        const foundObject = this.checkIsObjectSelected(prediction, video, canvas);
 
         // Estilizando a caixa delimitadora
         const lineWidth = 1;
@@ -92,12 +90,26 @@ export class TfMlComponent implements OnInit {
     requestAnimationFrame(() => this.detectObjects(video, model, canvas));
   }
 
-  checkIsObjectSelected(prediction: any): boolean {
+  checkIsObjectSelected(prediction: any, video:any, canvas:any): boolean {
     if (prediction.class === 'traffic light') {
-      this.tfMlStateService.objectIsFound(prediction);
+ 
+      const objectFounded = {
+        prediction: prediction,
+        photo: this.capturePhotoObjectFound(video, canvas)
+      }
+
+      this.tfMlStateService.objectIsFound(objectFounded);
       return true
     }
     return false
+  }
+
+  capturePhotoObjectFound(video:any, canvas:any){
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageUrl = canvas.toDataURL('image/png');
+    return imageUrl;
   }
 
 }
