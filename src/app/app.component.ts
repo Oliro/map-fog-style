@@ -38,14 +38,14 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '5-Inicio';
 
   public objectFound: any[] = [];
 
   constructor(private tfMlStateService: TfMlService){}
 
   ngOnInit(): void {
-    this.tfMlStateService.objectFound$.subscribe((result) => this.objectFound = result)
+    this.tfMlStateService.objectFound$.subscribe((result) => {this.objectFound = result, console.log(this.objectFound, 'states ok-before')})
     this.createMap();
   }
 
@@ -144,6 +144,7 @@ export class AppComponent implements OnInit {
         this.totalDistance = this.calculateTotalDistanceLeafletMethod(this.polyline);
         this.calculeExploredArea()
       } else {
+        console.log('Ponto descartado devido a filtros.');
         this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
@@ -163,8 +164,8 @@ export class AppComponent implements OnInit {
     this.heatMap.addLatLng([latitude, longitude, 2]);
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
-
-    if(this.objectFound.length >= 1)this.markerObjectFound();
+    console.log(this.objectFound, 'states ok')
+    if(this.objectFound)this.markerObjectFound();
   }
 
   createIcons() {
@@ -272,6 +273,7 @@ export class AppComponent implements OnInit {
   }
 
   markerObjectFound(){
+    console.log(this.objectFound, 'states ok - after')
     const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/traffic-light.png', iconSize: [32, 32] });
     L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
   }
