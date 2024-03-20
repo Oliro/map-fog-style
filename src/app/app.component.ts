@@ -3,8 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.heat';
 import * as turf from '@turf/turf';
-import { BgGpsService } from './services/bg-gps.service';
-import { BackgroundGeolocationResponse } from '@ionic-native/background-geolocation/ngx';
+import { TfMlService } from './states/tf-ml.service';
 
 @Component({
   selector: 'app-root',
@@ -41,21 +40,12 @@ export class AppComponent implements OnInit {
   public pontos: number = 0;
   public mensagem = '2-Inicio';
 
-  constructor(private geolocationService: BgGpsService){}
+  public objectFound: any[] = [];
+
+  constructor(private tfMlStateService: TfMlService){}
+
   ngOnInit(): void {
-
-    this.geolocationService.startBackgroundGeolocation().subscribe(
-      (location: BackgroundGeolocationResponse) => {
-        this.mensagem = 'funcionando em segundo plano';
-        console.log('funcionando em segundo plano')
-      },
-      error => {
-        this.mensagem = 'erro não funciona';
-        console.log('erro não funciona', error)
-      }
-    );
-
-    
+    this.tfMlStateService.objectFound$.subscribe((result) => this.objectFound = result)
     this.createMap();
   }
 
@@ -140,7 +130,7 @@ export class AppComponent implements OnInit {
     if (this.lastPosition && this.lastTimestamp) {
 
       this.pontos++
-      //this.mensagem = 'criando novos pontos - ' + this.pontos + ' - accuracy= ' + position.coords.accuracy + ' metros';
+      this.mensagem = 'criando novos pontos - ' + this.pontos + ' - accuracy= ' + position.coords.accuracy + ' metros';
 
       // Calcular o deslocamento entre a posição atual e a posição anterior
       const distancia = this.calculateDistanceHaversinesFormula(latitude, longitude, this.lastPosition.coords.latitude, this.lastPosition.coords.longitude);
@@ -154,11 +144,10 @@ export class AppComponent implements OnInit {
         this.totalDistance = this.calculateTotalDistanceLeafletMethod(this.polyline);
         this.calculeExploredArea()
       } else {
-        console.log('Ponto descartado devido a filtros.');
-        //this.mensagem = 'Ponto descartado devido a filtros.'
+        this.mensagem = 'Ponto descartado devido a filtros.'
       }
     } else {
-      //this.mensagem = "Cria primeiro ponto"
+      this.mensagem = "Cria primeiro ponto"
       this.addPathLine(latitude, longitude)
     }
 
@@ -174,6 +163,8 @@ export class AppComponent implements OnInit {
     this.heatMap.addLatLng([latitude, longitude, 2]);
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
+
+    if(this.objectFound.length >= 1)this.markerObjectFound();
   }
 
   createIcons() {
@@ -244,9 +235,6 @@ export class AppComponent implements OnInit {
 
     this.map.fitBounds(cityBoundaryLayer.getBounds());
 
-
-
-
     const areaTotalGeoJson = turf.area(this.geoJson())
     L.popup()
     .setLatLng(cityBoundaryLayer.getBounds().getCenter())
@@ -281,6 +269,11 @@ export class AppComponent implements OnInit {
 
   ngOnDestroy() {
     if (this.map) this.map.remove();
+  }
+
+  markerObjectFound(){
+    const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/traffic-light.png', iconSize: [32, 32] });
+    L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
   }
 
   geoJson(): any {

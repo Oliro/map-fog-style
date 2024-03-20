@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
+import { TfMlService } from '../states/tf-ml.service';
 
 @Component({
   selector: 'app-tf-ml',
@@ -12,6 +13,8 @@ export class TfMlComponent implements OnInit {
 
   @ViewChild('video', { static: false }) videoElement!: ElementRef;
   @ViewChild('canvas', { static: false }) canvas!: ElementRef;
+
+  constructor(private tfMlStateService: TfMlService) { }
 
   async ngOnInit() {
 
@@ -24,7 +27,7 @@ export class TfMlComponent implements OnInit {
     const canvas = this.canvas.nativeElement;
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: {facingMode: 'environment'} }); //'user' para câmera frontal, 'environment' para câmera traseira
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }); //'user' para câmera frontal, 'environment' para câmera traseira
       video.srcObject = stream;
 
       video.onloadedmetadata = () => {
@@ -40,18 +43,23 @@ export class TfMlComponent implements OnInit {
   }
 
   async detectObjects(video: any, model: any, canvas: any) {
-    
+
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
     const predictions = await model.detect(video);
 
     if (predictions.length > 0) {
       predictions.forEach((prediction: any) => {
+
+        const foundObject = this.checkIsObjectSelected(prediction);
+
+        if (foundObject) { console.log("Objeto encontrado");}
+
         // Estilizando a caixa delimitadora
         const lineWidth = 1;
         const borderColor = 'white'; // Cor do contorno vermelho
         const backgroundColor = 'rgba(0, 255, 0, 0.25)'; // Cor de fundo verde com 50% de opacidade
-    
+
         // Desenhar caixa delimitadora
         context.beginPath();
         context.lineWidth = lineWidth;
@@ -60,7 +68,7 @@ export class TfMlComponent implements OnInit {
         context.rect(prediction.bbox[0], prediction.bbox[1], prediction.bbox[2], prediction.bbox[3]);
         context.stroke();
         context.fill();
-    
+
         // Estilizando o texto da classe do objeto (cabeçalho)
         const headerBackgroundColor = 'black'; // Fundo preto
         const headerTextColor = 'white'; // Texto branco
@@ -75,7 +83,7 @@ export class TfMlComponent implements OnInit {
         context.fillStyle = headerTextColor;
         context.fillText(headerText, prediction.bbox[0], prediction.bbox[1] > 10 ? prediction.bbox[1] - 5 : 10);
       });
-    
+
     } else {
       // Adicione um código aqui para lidar com a ausência de detecção de objetos
       console.log("Nenhum objeto detectado.");
@@ -84,5 +92,12 @@ export class TfMlComponent implements OnInit {
     requestAnimationFrame(() => this.detectObjects(video, model, canvas));
   }
 
-  
+  checkIsObjectSelected(prediction: any): boolean {
+    if (prediction.class === 'traffic light') {
+      this.tfMlStateService.objectIsFound(prediction);
+      return true
+    }
+    return false
+  }
+
 }
