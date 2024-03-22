@@ -5,6 +5,7 @@ import 'leaflet.heat';
 import * as turf from '@turf/turf';
 import { TfMlService } from './states/tf-ml.service';
 import { BehaviorSubject, debounceTime } from 'rxjs';
+import { Localstorage } from './local-storage/localstorage';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,7 @@ import { BehaviorSubject, debounceTime } from 'rxjs';
   styleUrls: ['./app.component.scss']
 })
 
-export class AppComponent implements OnInit {
+export class AppComponent extends Localstorage implements OnInit{
 
   private map!: L.Map;
   public heatMap!: L.HeatLayer;
@@ -39,14 +40,14 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '1-Inicio';
+  public mensagem = '9-Inicio';
 
   public objectFound: any;
 
   objectFoundMarkerAdded$ = new BehaviorSubject<boolean>(false);
   private objectFoundMarkerAdded = false;
   
-  constructor(private tfMlStateService: TfMlService) { }
+  constructor(private tfMlStateService: TfMlService) { super(); }
 
   ngOnInit(): void {
     this.tfMlStateService.objectFound$.subscribe((result) => this.objectFound = result)
@@ -74,9 +75,11 @@ export class AppComponent implements OnInit {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
 
-    this.polyline = L.polyline([], { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
-    this.polylineBorder = L.polyline([], { color: '#025159', weight: 4 }).addTo(this.map);
-    this.heatMap = L.heatLayer([], { radius: 16 });
+    this.coordinatesArray = this.getPath();
+
+    this.polyline = L.polyline(this.coordinatesArray, { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
+    this.polylineBorder = L.polyline(this.coordinatesArray, { color: '#025159', weight: 4 }).addTo(this.map);
+    this.heatMap = L.heatLayer(this.coordinatesArray, { radius: 16 });
 
     tiles.addTo(this.map);
     this.polyline.addTo(this.map);
@@ -91,6 +94,7 @@ export class AppComponent implements OnInit {
 
   }
 
+  
   startTracking() {
 
     let firstPointView: boolean = false;
@@ -178,7 +182,8 @@ export class AppComponent implements OnInit {
     this.heatMap.addLatLng([latitude, longitude, 2]);
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
-    if (this.objectFound.prediction) this.markerObjectFound();
+    if (this.objectFound.prediction) this.markerObjectFound(latitude, longitude);
+    this.setPath([this.coordinatesArray])
   }
 
   createIcons() {
@@ -285,12 +290,17 @@ export class AppComponent implements OnInit {
     if (this.map) this.map.remove();
   }
 
-  markerObjectFound() {
+  markerObjectFound(latitude: number, longitude: number) {
     if (!this.objectFoundMarkerAdded) {
-      const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/traffic-light.png', iconSize: [32, 32] });
+      const icon = 'traffic-light.png';
+      const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/'+icon, iconSize: [32, 32] });
       let objectFoundMarker = L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
 
       const blobPhoto = this.createPhotoBase64ToBlob();
+
+      const marker = {icon: icon, blobPhoto: this.objectFound.photo}
+      this.coordinatesArray[this.coordinatesArray.length - 1] = [latitude, longitude, 2, marker];
+
 
       objectFoundMarker.bindPopup(`<img src="${blobPhoto}" width="150">`);
       
@@ -306,7 +316,6 @@ export class AppComponent implements OnInit {
   }
 
   createPhotoBase64ToBlob(){
-    // Cria um Blob a partir da imagem em base64 (substitua 'this.objectFound.photo' com sua própria variável)
     const byteCharacters = atob(this.objectFound.photo.split(',')[1]);
     const byteArray = new Uint8Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
@@ -314,7 +323,6 @@ export class AppComponent implements OnInit {
     }
     const blob = new Blob([byteArray], { type: 'image/png' });
 
-    // Cria a URL do objeto Blob
     const imageUrl = URL.createObjectURL(blob);
     return imageUrl;
   }
