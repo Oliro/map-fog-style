@@ -21,7 +21,6 @@ export class TfMlComponent implements OnInit {
     await tf.setBackend('webgl');
 
     const model = await cocoSsd.load();
-    console.log("COCO-SSD model loaded:", model);
 
     const video = this.videoElement.nativeElement;
     const canvas = this.canvas.nativeElement;
@@ -36,7 +35,6 @@ export class TfMlComponent implements OnInit {
         this.detectObjects(video, model, canvas);
       };
     } catch (error) {
-      // Lidar com erros de permissão
       console.error('Erro ao acessar a câmera:', error);
     }
 
