@@ -4,7 +4,6 @@ import * as L from 'leaflet';
 import 'leaflet.heat';
 import * as turf from '@turf/turf';
 import { TfMlService } from './states/tf-ml.service';
-import { BehaviorSubject, debounceTime } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -39,30 +38,18 @@ export class AppComponent implements OnInit {
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '2-Inicio';
+  public mensagem = '5-Inicio';
 
   public objectFound: any;
 
   
   private objectFoundMarkerAdded = false;
-  objectFoundMarkerAdded$ = new BehaviorSubject<boolean>(false);
   
   constructor(private tfMlStateService: TfMlService) { }
 
   ngOnInit(): void {
     this.tfMlStateService.objectFound$.subscribe((result) => this.objectFound = result)
     this.createMap();
-
-    this.objectFoundMarkerAdded$
-    .pipe(
-      debounceTime(3000)
-    )
-    .subscribe(value => {
-      if (value === true) {
-        this.timeResetObjectFoundMarker();
-      }
-    });
-    
   }
 
   createMap() {
@@ -295,7 +282,6 @@ export class AppComponent implements OnInit {
 
       objectFoundMarker.bindPopup(`<img src="${blobPhoto}" width="150">`);
 
-      this.objectFoundMarkerAdded$.next(true);
       this.objectFoundMarkerAdded = true;
 
       objectFoundMarker.on('click touch', () => {
@@ -317,11 +303,6 @@ export class AppComponent implements OnInit {
     // Cria a URL do objeto Blob
     const imageUrl = URL.createObjectURL(blob);
     return imageUrl;
-  }
-
-  timeResetObjectFoundMarker(){
-    this.objectFoundMarkerAdded$.next(false);
-    this.objectFoundMarkerAdded = false;
   }
 
   geoJson(): any {
