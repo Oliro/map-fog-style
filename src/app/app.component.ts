@@ -5,7 +5,9 @@ import 'leaflet.heat';
 import * as turf from '@turf/turf';
 import { TfMlService } from './states/tf-ml.service';
 import { BehaviorSubject, debounceTime } from 'rxjs';
+
 import { Localstorage } from './local-storage/localstorage';
+import { MarkerPath } from './model/coordinates-path';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +15,7 @@ import { Localstorage } from './local-storage/localstorage';
   styleUrls: ['./app.component.scss']
 })
 
-export class AppComponent extends Localstorage implements OnInit{
+export class AppComponent extends Localstorage implements OnInit {
 
   private map!: L.Map;
   public heatMap!: L.HeatLayer;
@@ -21,6 +23,7 @@ export class AppComponent extends Localstorage implements OnInit{
 
   public coordinatesArray: any[] = [];
   public coordinatesArrayAreaToExplore: any[] = [];
+
   public polyline: any;
   public polylineBorder: any;
 
@@ -40,13 +43,13 @@ export class AppComponent extends Localstorage implements OnInit{
   public totalAreaExplored: any;
 
   public pontos: number = 0;
-  public mensagem = '9-Inicio';
+  public mensagem = '1-Inicio';
 
   public objectFound: any;
 
   objectFoundMarkerAdded$ = new BehaviorSubject<boolean>(false);
   private objectFoundMarkerAdded = false;
-  
+
   constructor(private tfMlStateService: TfMlService) { super(); }
 
   ngOnInit(): void {
@@ -54,15 +57,15 @@ export class AppComponent extends Localstorage implements OnInit{
     this.createMap();
 
     this.objectFoundMarkerAdded$
-    .pipe(
-      debounceTime(30000)
-    )
-    .subscribe(value => {
-      if (value === true) {
-        this.timeResetObjectFoundMarker();
-      }
-    });
-    
+      .pipe(
+        debounceTime(30000)
+      )
+      .subscribe(value => {
+        if (value === true) {
+          this.timeResetObjectFoundMarker();
+        }
+      });
+
   }
 
   createMap() {
@@ -77,9 +80,7 @@ export class AppComponent extends Localstorage implements OnInit{
 
     this.coordinatesArray = this.getPath();
 
-    this.polyline = L.polyline(this.coordinatesArray, { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
-    this.polylineBorder = L.polyline(this.coordinatesArray, { color: '#025159', weight: 4 }).addTo(this.map);
-    this.heatMap = L.heatLayer(this.coordinatesArray, { radius: 16 });
+    this.loadPathHitory()
 
     tiles.addTo(this.map);
     this.polyline.addTo(this.map);
@@ -94,7 +95,42 @@ export class AppComponent extends Localstorage implements OnInit{
 
   }
 
-  
+  loadPathHitory() {
+    let latitude: number;
+    let longitude: number;
+    let intensity: number;
+
+    const coordinatesPath: any = this.coordinatesArray.map(path => {
+      latitude = path[0];
+      longitude = path[1];
+      intensity = path[2];
+      return [latitude, longitude, intensity];
+    });
+
+    this.polyline = L.polyline(coordinatesPath, { color: '#C4EEF2', weight: 7, opacity: 1 }).addTo(this.map);
+    this.polylineBorder = L.polyline(coordinatesPath, { color: '#025159', weight: 4 }).addTo(this.map);
+    this.heatMap = L.heatLayer(coordinatesPath, { radius: 16 });
+
+    this.coordinatesArray.forEach(path => {
+
+      const markerFound = path[3];
+
+      if (markerFound) {
+
+        latitude = path[0];
+        longitude = path[1];
+        const marker: MarkerPath = {
+          icon: path[3].icon,
+          photo: path[3].photo
+        }
+
+        this.markerObjectFound(latitude, longitude, marker);
+
+      }
+
+    })
+  }
+
   startTracking() {
 
     let firstPointView: boolean = false;
@@ -182,8 +218,21 @@ export class AppComponent extends Localstorage implements OnInit{
     this.heatMap.addLatLng([latitude, longitude, 2]);
     this.coordinatesArray.push([latitude, longitude, 2]);
     this.createIcons()
-    if (this.objectFound.prediction) this.markerObjectFound(latitude, longitude);
-    this.setPath([this.coordinatesArray])
+
+    if (this.objectFound.prediction) {
+
+      if (!this.objectFoundMarkerAdded) {
+        const marker: MarkerPath = {
+          icon: 'traffic-light.png',
+          photo: this.objectFound.photo
+        }
+        this.markerObjectFound(latitude, longitude, marker);
+        this.coordinatesArray[this.coordinatesArray.length - 1] = [latitude, longitude, 2, marker];
+      }
+
+    }
+
+    this.setPath(this.coordinatesArray)
   }
 
   createIcons() {
@@ -290,33 +339,27 @@ export class AppComponent extends Localstorage implements OnInit{
     if (this.map) this.map.remove();
   }
 
-  markerObjectFound(latitude: number, longitude: number) {
-    if (!this.objectFoundMarkerAdded) {
-      const icon = 'traffic-light.png';
-      const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/'+icon, iconSize: [32, 32] });
-      let objectFoundMarker = L.marker(this.coordinatesArray[this.coordinatesArray.length - 1], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
+  markerObjectFound(latitude: number, longitude: number, marker: MarkerPath) {
 
-      const blobPhoto = this.createPhotoBase64ToBlob();
+    const objectFoundIcon = L.icon({ iconUrl: 'assets/icons/' + marker.icon, iconSize: [32, 32] });
+    let objectFoundMarker = L.marker([latitude, longitude], { icon: objectFoundIcon }).addTo(this.map).bindPopup("Objeto Encontrado");
 
-      const marker = {icon: icon, blobPhoto: this.objectFound.photo}
-      this.coordinatesArray[this.coordinatesArray.length - 1] = [latitude, longitude, 2, marker];
+    const blobPhoto = this.createPhotoBase64ToBlob(marker.photo);
 
+    objectFoundMarker.bindPopup(`<img src="${blobPhoto}" width="150">`);
 
-      objectFoundMarker.bindPopup(`<img src="${blobPhoto}" width="150">`);
-      
-      this.objectFoundMarkerAdded$.next(true);
-      this.objectFoundMarkerAdded = true;
-      this.objectFound.prediction = undefined;
+    this.objectFoundMarkerAdded$.next(true);
+    this.objectFoundMarkerAdded = true;
+    this.objectFound.prediction = undefined;
 
-      objectFoundMarker.on('click touch', () => {
-        objectFoundMarker.openPopup();
-      });
+    objectFoundMarker.on('click touch', () => {
+      objectFoundMarker.openPopup();
+    });
 
-    }
   }
 
-  createPhotoBase64ToBlob(){
-    const byteCharacters = atob(this.objectFound.photo.split(',')[1]);
+  createPhotoBase64ToBlob(photo: string) {
+    const byteCharacters = atob(photo.split(',')[1]);
     const byteArray = new Uint8Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {
       byteArray[i] = byteCharacters.charCodeAt(i);
@@ -327,7 +370,7 @@ export class AppComponent extends Localstorage implements OnInit{
     return imageUrl;
   }
 
-  timeResetObjectFoundMarker(){
+  timeResetObjectFoundMarker() {
     this.objectFoundMarkerAdded$.next(false);
     this.objectFoundMarkerAdded = false;
   }
